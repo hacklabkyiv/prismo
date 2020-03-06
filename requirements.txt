@@ -1,0 +1,13 @@
+Flask
+Flask-SocketIO
+Jinja2
+MarkupSafe
+Werkzeug
+gevent
+gevent-websocket
+greenlet
+ipython
+itsdangerous
+pyreadline
+pyyaml
+paho-mqtt
