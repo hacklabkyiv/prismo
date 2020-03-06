@@ -140,39 +140,6 @@ def index():
                            column_names=all_column_names,
                            latest_key_info=latest_key_info)
 
-@app.route("/macs", methods=['GET', 'POST'])
-def macs():
-    try:
-        conn = psycopg.connect(user = cfg['data']['user'],
-                                  password = cfg['data']['password'],
-                                  host = cfg['data']['host'],
-                                  port = cfg['data']['port'],
-                                  database = cfg['data']['name'])
-    except (Exception, psycopg.DatabaseError) as error :
-        logger.error("Error while connecting to PostgreSQL: %s" % error)
-        abort(500)
-    cursor = conn.cursor()
-    cursor.execute("SELECT name, array_agg(mac) AS macs FROM users u left join macs m on m.user_id = u.id group by u.name")
-    mac_info = cursor.fetchall()
-    cursor.execute("SELECT name, id FROM users")
-    user_options = cursor.fetchall()
-    if request.method == 'POST':
-        operation = request.form['operation']
-        if operation == 'add':
-            user_id = request.form['user_id']
-            mac = request.form['mac']
-            cursor.execute('INSERT INTO macs(user_id, mac) VALUES(%s, %s)', (user_id, mac))
-            conn.commit()
-            logger.info('Mac added: %s, %s' % (user_id, mac))
-        elif operation == 'delete':
-            mac = request.form['mac']
-            cursor.execute('DELETE FROM macs WHERE mac=%s', (mac, ))
-            conn.commit()
-            logger.info('Mac deleted: %s' % mac)
-    cursor.close()
-    conn.close()
-    return render_template('macs.html', mac_info=mac_info, user_options=user_options)
-
 @app.route("/log_viewer")
 def log_reader_wrapper():
     return txt_log_reader.render_logs_to_html()
