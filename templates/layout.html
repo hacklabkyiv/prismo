@@ -12,7 +12,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intro.js/2.7.0/introjs.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.8/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.8/js/select2.min.js"></script>
-
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.13.1/datatables.min.css"/>
+    <script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.13.1/datatables.min.js"></script>
 </head>
 
 <body>
@@ -33,6 +34,14 @@
     <footer class="footer">
         <p>&copy; Hacklab 2017</p>
     </footer>
+    <script>
+        $(document).ready(function(){
+            $('#tblData').dataTable({
+                paging: false,
+                order: [[1, 'asc']],
+            });
+        });
+    </script>
 </body>
 
 </html>
