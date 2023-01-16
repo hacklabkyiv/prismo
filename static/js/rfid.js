@@ -10,9 +10,6 @@ function onCheckboxChange(context) {
 		if (xhr.readyState == 4) {
 			if (xhr.status != 200) {
 				alert("Cannot get updated table!");
-			} else {
-				// Reload page when we received response
-				location.reload(true);
 			}
 		}
 	}
