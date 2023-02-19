@@ -32,13 +32,14 @@
     {% block content %}{% endblock %}
     <div id="footer">
     </div>
-    <footer class="footer">
+    <footer class="footer px-2">
         <p>&copy; Hacklab 2017</p>
     </footer>
     <script>
         $(document).ready(function(){
             $('#tblData').dataTable({
-                paging: false
+                paging: false,
+                columnDefs: [{ targets: [5], searchable: false, orderable: false }]
             });
         });
     </script>
