@@ -89,10 +89,9 @@ def index():
     all_column_names = list(description[0] for description in
                           cursor.description)
 
-    # Get column names for devices, needed access control. We assume that first
-    # three columns are id, name and key
-    access_info_columns = all_column_names[3:]
-    cursor.execute('SELECT id, name, key FROM users')
+    # Get column names for devices, needed access control. Exclude the others
+    access_info_columns = list(filter(lambda value: not value in ['id', 'name', 'key', 'last_enter'], all_column_names))
+    cursor.execute('SELECT id, name, key, last_enter FROM users')
     user_info = cursor.fetchall()
     cursor.execute('SELECT %s FROM users'
                         % ','.join(access_info_columns))
