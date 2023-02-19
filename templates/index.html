@@ -25,7 +25,7 @@
                 <table id="tblData" class="table stripe hover align-middle dataTable no-footer compact">
                     <thead>
                         <tr>
-                            {% for column_name in column_names[1:] %}
+                            {% for column_name in ['Name', 'Key', 'Last enter', 'Door', 'Lathe'] %}
                                 <th>{{column_name}}</th>
                             {% endfor %}
                             <th></th>
@@ -35,11 +35,19 @@
                     {% for item in data %}
                         <!-- User information part -->
                         <tr>
-                        {% for subitem in item[0][1:] %}
+                        {% for subitem in item[0][1:-1] %}
                             <td>{{subitem}}</td>
                         {% endfor %}
+                        <!-- Last enter part -->
+                        <td>
+                        {% if item[0][3]  %}
+                            {{ item[0][3].strftime('%Y-%m-%d %H:%M') }}
+                        {% else %}
+                            –
+                        {% endif %}
+                        </td>
                         <!-- Access information part -->
-                        {% for subitem in item[0][1:] %}
+                        {% for subitem in item[1] %}
                          <td>
                          <!-- Value is encoded like: (x,y), where x - is index of access
                          devices(door, cnc, etc), y - user ID value -->
