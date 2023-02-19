@@ -4,7 +4,7 @@
         <h1 class="my-4">Access control</h1>
         <div class="well well-sm pb-4" data-step="1"
         data-intro="Latest used key on DOOR is shown here. Put new key to door reader and check modify datetime"
-          >Latest triggered door key: {{latest_key_info}}
+          >Latest triggered door key: {{ latest_key_info }}
         </div>
         <div class="row">
           <div class="form-group col-md-5 col-sm-12" data-step="2" data-intro="Add this new key here.">
@@ -26,7 +26,7 @@
                     <thead>
                         <tr>
                             {% for column_name in ['Name', 'Key', 'Last enter', 'Door', 'Lathe'] %}
-                                <th>{{column_name}}</th>
+                                <th>{{ column_name }}</th>
                             {% endfor %}
                             <th></th>
                         </tr>
@@ -36,11 +36,11 @@
                         <!-- User information part -->
                         <tr>
                         {% for subitem in item[0][1:-1] %}
-                            <td>{{subitem}}</td>
+                            <td>{{ subitem }}</td>
                         {% endfor %}
                         <!-- Last enter part -->
                         <td>
-                        {% if item[0][3]  %}
+                        {% if item[0][3] %}
                             {{ item[0][3].strftime('%Y-%m-%d %H:%M') }}
                         {% else %}
                             –
