@@ -25,21 +25,21 @@
                 <table id="tblData" class="table stripe hover align-middle dataTable no-footer compact">
                     <thead>
                         <tr>
-                            {% for column_name in column_names %}
+                            {% for column_name in column_names[1:] %}
                                 <th>{{column_name}}</th>
                             {% endfor %}
-                            <th>Operation</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody id="table_body">
                     {% for item in data %}
                         <!-- User information part -->
                         <tr>
-                        {% for subitem in item[0] %}
+                        {% for subitem in item[0][1:] %}
                             <td>{{subitem}}</td>
                         {% endfor %}
                         <!-- Access information part -->
-                        {% for subitem in item[1] %}
+                        {% for subitem in item[0][1:] %}
                          <td>
                          <!-- Value is encoded like: (x,y), where x - is index of access
                          devices(door, cnc, etc), y - user ID value -->
