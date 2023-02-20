@@ -25,7 +25,7 @@
                 <table id="tblData" class="table stripe hover align-middle dataTable no-footer compact pt-3">
                     <thead>
                         <tr>
-                            {% for column_name in ['Name', 'Key', 'Last enter', 'Door', 'Lathe'] %}
+                            {% for column_name in column_names %}
                                 <th>{{ column_name }}</th>
                             {% endfor %}
                             <th></th>
@@ -35,7 +35,7 @@
                     {% for item in data %}
                         <!-- User information part -->
                         <tr>
-                        {% for subitem in item[0][1:-1] %}
+                        {% for subitem in item[0][:-1] %}
                             <td>{{ subitem }}</td>
                         {% endfor %}
                         <!-- Last enter part -->
