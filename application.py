@@ -22,7 +22,6 @@ import datetime
 import psycopg2 as psycopg
 import requests
 import txt_log_reader
-
 try:
     from yaml import CLoader as Loader, CDumper
 except ImportError:
@@ -91,6 +90,9 @@ def index():
 
     # Get column names for devices, needed access control. Exclude the others
     access_info_columns = list(filter(lambda value: not value in ['id', 'name', 'key', 'last_enter'], all_column_names))
+    ordered_column_names = ['id', 'name', 'key', 'last_enter']
+    ordered_column_names.extend(access_info_columns)                   
+    
     cursor.execute('SELECT id, name, key, last_enter FROM users')
     user_info = cursor.fetchall()
     cursor.execute('SELECT %s FROM users'
@@ -136,9 +138,10 @@ def index():
     cursor.close()
     conn.close()
     return render_template('index.html', data=template_data,
-                           column_names=all_column_names,
+                           column_names=ordered_column_names,
                            latest_key_info=latest_key_info)
 
 @app.route("/log_viewer")
 def log_reader_wrapper():
     return txt_log_reader.render_logs_to_html()
+
