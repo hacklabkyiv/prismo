@@ -145,3 +145,26 @@ def index():
 def log_reader_wrapper():
     return txt_log_reader.render_logs_to_html()
 
+
+@app.route('/log_view_2')
+def log_view_2():
+    try:
+        conn = psycopg.connect(user=cfg['data']['user'],
+                               password=cfg['data']['password'],
+                               host=cfg['data']['host'],
+                               port=cfg['data']['port'],
+                               database=cfg['data']['name'])
+    except (Exception, psycopg.DatabaseError) as error:
+        logger.error("Error while connecting to PostgreSQL: %s" % error)
+        abort(500)
+    cursor = conn.cursor()
+
+    cursor.execute('select device_name, name, to_timestamp(time) from logs join users u on logs.key = u.key;')
+
+    logs = cursor.fetchall()
+
+    print(logs)
+
+    cursor.close()
+    conn.close()
+    return render_template('log_view_2.html', logs=logs)

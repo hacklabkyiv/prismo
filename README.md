@@ -55,6 +55,9 @@ By default, this should be run by Prismo admin process, but for debugging purpos
    ```bash
    visitors=# CREATE TABLE users ( id serial primary key, name text, key text, last_enter timestamp, door boolean, lathe boolean);
    ```
+   ```bash
+   visitors=# CREATE TABLE logs(device_name text, key text, time integer);
+   ```
    Alternatively you can add column to already existed table by command: `ALTER TABLE users ADD COLUMN last_enter TIMESTAMP;` 
 
 5. Show contents of table:
