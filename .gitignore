@@ -151,4 +151,5 @@ out/
 .vscode/
 
 .fleet
+log.txt
 

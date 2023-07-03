@@ -7,21 +7,17 @@ Core of Hacklab Admin Panel
 @author: Artem Synytsyn
 """
 
-from flask import Flask, render_template, request, abort
-import time
-import json
-import yaml
-import sys
-import os
-import logging
-from logging.handlers import RotatingFileHandler
-from collections import namedtuple
-from threading import Thread
-from os.path import getmtime
 import datetime
+import logging
+import os
+import sys
+from logging.handlers import RotatingFileHandler
+from os.path import getmtime
+
 import psycopg2 as psycopg
-import requests
-import txt_log_reader
+import yaml
+from flask import Flask, render_template, request, abort
+
 try:
     from yaml import CLoader as Loader, CDumper
 except ImportError:
@@ -91,8 +87,8 @@ def index():
     # Get column names for devices, needed access control. Exclude the others
     access_info_columns = list(filter(lambda value: not value in ['id', 'name', 'key', 'last_enter'], all_column_names))
     ordered_column_names = ['id', 'name', 'key', 'last_enter']
-    ordered_column_names.extend(access_info_columns)                   
-    
+    ordered_column_names.extend(access_info_columns)
+
     cursor.execute('SELECT id, name, key, last_enter FROM users')
     user_info = cursor.fetchall()
     cursor.execute('SELECT %s FROM users'
@@ -124,8 +120,6 @@ def index():
             conn.commit()
         elif operation == 'delete':
             user_id = request.form['id']
-            user_device = request.form['device']
-            user_state = request.form['state']
             cursor.execute('DELETE FROM users WHERE id=%s', (user_id, ))
             conn.commit()
             logger.info('User deleted, id: %s' % user_id)
@@ -141,13 +135,8 @@ def index():
                            column_names=ordered_column_names,
                            latest_key_info=latest_key_info)
 
-@app.route("/log_viewer")
-def log_reader_wrapper():
-    return txt_log_reader.render_logs_to_html()
-
-
-@app.route('/log_view_2')
-def log_view_2():
+@app.route('/log_view')
+def log_view():
     try:
         conn = psycopg.connect(user=cfg['data']['user'],
                                password=cfg['data']['password'],
@@ -167,4 +156,4 @@ def log_view_2():
 
     cursor.close()
     conn.close()
-    return render_template('log_view_2.html', logs=logs)
+    return render_template('log_view.html', logs=logs)
