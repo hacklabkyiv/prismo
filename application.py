@@ -65,7 +65,7 @@ def get_latest_key_info():
                 mod_time).strftime('%Y-%m-%d %H:%M:%S')
     except OSError:
         mod_time_converted = '<unknown>'
-    return ("%s updated at: %s" % (key_value, mod_time_converted))
+    return "%s updated at: %s" % (key_value, mod_time_converted)
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -77,7 +77,7 @@ def index():
                                   port = cfg['data']['port'],
                                   database = cfg['data']['name'])
     except (Exception, psycopg.DatabaseError) as error :
-        logger.error("Error while connecting to PostgreSQL: %s" % error)
+        logger.error("Error while connecting to PostgresSQL: %s" % error)
         abort(500)
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM users')
@@ -144,7 +144,7 @@ def log_view():
                                port=cfg['data']['port'],
                                database=cfg['data']['name'])
     except (Exception, psycopg.DatabaseError) as error:
-        logger.error("Error while connecting to PostgreSQL: %s" % error)
+        logger.error("Error while connecting to PostgresSQL: %s" % error)
         abort(500)
     cursor = conn.cursor()
 
