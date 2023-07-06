@@ -1,9 +1,10 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<h1>Logs</h1>
 
-<div class="py-3">
+<div class="container-fluid px-md-5">
+    <h1 class="my-4">Logs</h1>
+    <div class="py-3">
     <table class="table stripe hover align-middle dataTable no-footer compact pt-3">
         <tr>
             <th>Device name</th>
@@ -12,14 +13,14 @@
         </tr>
         {% for log in logs %}
         <tr>
-            <td>{{ log[0] }}</td>
-            <td>{{ log[1] }}</td>
-            <td>{{ log[2] }}</td>
+            <td>{{ log.device_name }}</td>
+            <td>{{ log.user_name }}</td>
+            <td>{{ log.time }}</td>
         </tr>
         {% endfor %}
 
     </table>
 </div>
 
-
+</div>
 {% endblock %}

@@ -18,6 +18,8 @@ import psycopg2 as psycopg
 import yaml
 from flask import Flask, render_template, request, abort
 
+from log_repository import get_logs
+
 try:
     from yaml import CLoader as Loader, CDumper
 except ImportError:
@@ -44,13 +46,14 @@ if cfg['logging']['debug'] is True:
     logging.basicConfig(level=logging.DEBUG)
     # Create logger to be able to use rolling logs
     logger.setLevel(logging.DEBUG)
-    log_handler = RotatingFileHandler(cfg['logging']['logfile'],mode='a',
-                                      maxBytes=int(cfg['logging']['logsize_kb'])*1024,
+    log_handler = RotatingFileHandler(cfg['logging']['logfile'], mode='a',
+                                      maxBytes=int(cfg['logging']['logsize_kb']) * 1024,
                                       backupCount=int(cfg['logging']['rolldepth']),
                                       delay=0)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     log_handler.setFormatter(formatter)
     logger.addHandler(log_handler)
+
 
 def get_latest_key_info():
     try:
@@ -62,7 +65,7 @@ def get_latest_key_info():
     try:
         mod_time = getmtime(LATEST_KEY_FILE)
         mod_time_converted = datetime.datetime.fromtimestamp(
-                mod_time).strftime('%Y-%m-%d %H:%M:%S')
+            mod_time).strftime('%Y-%m-%d %H:%M:%S')
     except OSError:
         mod_time_converted = '<unknown>'
     return "%s updated at: %s" % (key_value, mod_time_converted)
@@ -71,18 +74,18 @@ def get_latest_key_info():
 @app.route('/', methods=['GET', 'POST'])
 def index():
     try:
-        conn = psycopg.connect(user = cfg['data']['user'],
-                                  password = cfg['data']['password'],
-                                  host = cfg['data']['host'],
-                                  port = cfg['data']['port'],
-                                  database = cfg['data']['name'])
-    except (Exception, psycopg.DatabaseError) as error :
+        conn = psycopg.connect(user=cfg['data']['user'],
+                               password=cfg['data']['password'],
+                               host=cfg['data']['host'],
+                               port=cfg['data']['port'],
+                               database=cfg['data']['name'])
+    except (Exception, psycopg.DatabaseError) as error:
         logger.error("Error while connecting to PostgresSQL: %s" % error)
         abort(500)
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM users')
     all_column_names = list(description[0] for description in
-                          cursor.description)
+                            cursor.description)
 
     # Get column names for devices, needed access control. Exclude the others
     access_info_columns = list(filter(lambda value: not value in ['id', 'name', 'key', 'last_enter'], all_column_names))
@@ -92,7 +95,7 @@ def index():
     cursor.execute('SELECT id, name, key, last_enter FROM users')
     user_info = cursor.fetchall()
     cursor.execute('SELECT %s FROM users'
-                        % ','.join(access_info_columns))
+                   % ','.join(access_info_columns))
     user_access_info = cursor.fetchall()
     template_data = zip(user_info, user_access_info)
 
@@ -111,22 +114,22 @@ def index():
                 user_state = '0'
 
             logger.info('Updated user info: %s, %s, %s' % (user_id,
-                         access_info_columns[int(user_device)],
-                         user_state))
+                                                           access_info_columns[int(user_device)],
+                                                           user_state))
             command = "UPDATE users SET %s = '%s' WHERE id = %s" \
-                % (access_info_columns[int(user_device)], user_state,
-                   user_id)
+                      % (access_info_columns[int(user_device)], user_state,
+                         user_id)
             cursor.execute(command)
             conn.commit()
         elif operation == 'delete':
             user_id = request.form['id']
-            cursor.execute('DELETE FROM users WHERE id=%s', (user_id, ))
+            cursor.execute('DELETE FROM users WHERE id=%s', (user_id,))
             conn.commit()
             logger.info('User deleted, id: %s' % user_id)
         elif operation == 'add':
             user_name = request.form['nick']
             user_key = request.form['key']
-            cursor.execute('INSERT INTO users(name, key) VALUES(%s, %s)',(user_name, user_key))
+            cursor.execute('INSERT INTO users(name, key) VALUES(%s, %s)', (user_name, user_key))
             conn.commit()
             logger.info('User added: %s, %s' % (user_name, user_key))
     cursor.close()
@@ -135,25 +138,7 @@ def index():
                            column_names=ordered_column_names,
                            latest_key_info=latest_key_info)
 
+
 @app.route('/log_view')
 def log_view():
-    try:
-        conn = psycopg.connect(user=cfg['data']['user'],
-                               password=cfg['data']['password'],
-                               host=cfg['data']['host'],
-                               port=cfg['data']['port'],
-                               database=cfg['data']['name'])
-    except (Exception, psycopg.DatabaseError) as error:
-        logger.error("Error while connecting to PostgresSQL: %s" % error)
-        abort(500)
-    cursor = conn.cursor()
-
-    cursor.execute('select device_name, name, to_timestamp(time) from logs join users u on logs.key = u.key;')
-
-    logs = cursor.fetchall()
-
-    print(logs)
-
-    cursor.close()
-    conn.close()
-    return render_template('log_view.html', logs=logs)
+    return render_template('log_view.html', logs=get_logs())
