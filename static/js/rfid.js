@@ -1,23 +1,3 @@
-function onCheckboxChange(context) {
-    console.log('onCheckboxChange');
-	var data = new FormData();
-	data.append('operation', 'edit');
-	data.append('id', context.value.split(",")[1]);
-	data.append('device', context.value.split(",")[0]);
-	data.append('state', context.checked);
-
-	var xhr = new XMLHttpRequest();
-	xhr.onreadystatechange = function () {
-		if (xhr.readyState == 4) {
-			if (xhr.status != 200) {
-				alert("Cannot get updated table!");
-			}
-		}
-	}
-	xhr.open('POST', '/', true);
-	xhr.send(data);
-}
-
 function onUserPermissionChange(user_key, device_id, context) {
     console.log('change permission for user ' + user_key + ' on device ' + device_id);
 

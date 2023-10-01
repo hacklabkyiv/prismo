@@ -11,7 +11,7 @@ from flask import Flask, render_template, request
 from app.data.log_repository import get_logs
 from app.data.permissions_repository import grant_permission, reject_permission, get_user_with_permission_to_device
 from app.data.user_repository import delete_user, add_user
-from app.data.work_logs_repository import start_work, finish_work
+from app.data.work_logs_repository import start_work, finish_work, get_full_logs
 from users_view_model import get_access_control_panel
 
 try:
@@ -126,3 +126,8 @@ def finish_work_router(user_key, device_id):
 @app.route('/log_view')
 def log_view():
     return render_template('log_view.html', logs=get_logs())
+
+
+@app.route('/full_log_view')
+def full_log_view():
+    return render_template('full_log_view.html', logs=get_full_logs())
