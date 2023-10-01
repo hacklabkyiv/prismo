@@ -148,4 +148,16 @@ All data stored in postgres database. Currently, we have three tables:
 - logs - the table with logs. It contains three columns: timestamp, device_id, user_key. Timestamp is timestamp of
   event, device_id is unique id of device, user_key is key of user, who has access to this device.
 
+## API
 
+#### Get all users with access to device
+
+GET: `/device/user_with_access/<device_id>`
+
+#### User start work with device
+
+POST: `/device/start_work/<device_id>/<user_key>`
+
+#### User stop work with device
+
+POST: `/device/stop_work/<device_id>/<user_key>`

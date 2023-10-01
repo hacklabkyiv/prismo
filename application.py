@@ -9,8 +9,9 @@ import yaml
 from flask import Flask, render_template, request
 
 from app.data.log_repository import get_logs
-from app.data.permissions_repository import grant_permission, reject_permission
+from app.data.permissions_repository import grant_permission, reject_permission, get_user_with_permission_to_device
 from app.data.user_repository import delete_user, add_user
+from app.data.work_logs_repository import start_work, finish_work
 from users_view_model import get_access_control_panel
 
 try:
@@ -103,6 +104,23 @@ def index():
 
     return render_template('index.html', access_control_panel=access_control_panel,
                            latest_key_info=get_latest_key_info())
+
+
+@app.route('/device/user_with_access/<device_id>', methods=['GET'])
+def users_with_access_to_device(device_id):
+    return get_user_with_permission_to_device(device_id)
+
+
+@app.route('/device/start_work/<user_key>/<device_id>', methods=['POST'])
+def start_work_router(user_key, device_id):
+    start_work(user_key, device_id)
+    return 'OK'
+
+
+@app.route('/device/stop_work/<user_key>/<device_id>', methods=['POST'])
+def finish_work_router(user_key, device_id):
+    finish_work(user_key, device_id)
+    return 'OK'
 
 
 @app.route('/log_view')

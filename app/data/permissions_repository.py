@@ -32,6 +32,18 @@ def get_user_permissions(user_key):
 
     return user_permissions
 
+def get_user_with_permission_to_device(device_id):
+    with establish_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT user_key FROM permissions WHERE device_id = %s", (device_id,))
+            rows = cursor.fetchall()
+
+            users = []
+            for row in rows:
+                key, = row
+                users.append(key)
+
+    return users
 
 def grant_permission(user_key, device_id):
     with establish_connection() as connection:
