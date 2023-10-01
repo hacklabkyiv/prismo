@@ -3,7 +3,7 @@
 PRISMO Admin Panel
 ===================
 
-The goal of this webtool is provide basic management capabilities for hackerspaces, like:
+The goal of this web tool is provide basic management capabilities for hackerspaces, like:
 
 1. Presence management basing on MAC address monitoring
 2. RFID access system management
@@ -12,19 +12,21 @@ The goal of this webtool is provide basic management capabilities for hackerspac
 
 ## Prepare database
 
-Install docker on your system. 
+Install docker on your system.
 
-1. Pull PostgreSQL docker image
+1. Pull PostgresSQL docker image
 
    ```bash
    $ docker pull postgres
    ```
 
-2. Add user to group docker, user this instructions https://docs.docker.com/install/linux/linux-postinstall/. This will allow to use docker without sudo. TODO: update step for MacOS users
+2. Add user to group docker, user this instructions https://docs.docker.com/install/linux/linux-postinstall/. This will
+   allow to use docker without sudo. TODO: update step for MacOS users
 
 #### Optional steps
 
-By default, this should be run by Prismo admin process, but for debugging purpose you should run this commands by yourself.
+By default, this should be run by Prismo admin process, but for debugging purpose you should run this commands by
+yourself.
 
 1. Run docker with. Here we will create database with name `prismo-db` inside docker container.
 
@@ -53,19 +55,21 @@ By default, this should be run by Prismo admin process, but for debugging purpos
 4. Let's create table with users. Also we will create two columns with access to door and lathe.
 
    ```bash
-   visitors=# CREATE TABLE users ( id serial primary key, name text, key text, last_enter timestamp, door boolean, lathe boolean);
+   visitors=# CREATE TABLE users ( name text, key text, last_enter timestamp);
    ```
    ```bash
-   visitors=# CREATE TABLE logs(device_name text, key text, time integer);
+   visitors=# CREATE TABLE permissions ( device_id text not null, user_key  text );
    ```
-   Alternatively you can add column to already existed table by command: `ALTER TABLE users ADD COLUMN last_enter TIMESTAMP;` 
+   ```bash
+   visitors=# CREATE TABLE permissions ( device_id text not null, user_key  text );
+   ```
 
 5. Show contents of table:
 
    ```bash
    # SELECT * FROM users;
-    id | name | key | door | lathe 
-   ----+------+-----+------+-------
+    name | key | last_enter 
+   ----+------+-----+------
    (0 rows)
    ```
 
@@ -76,16 +80,16 @@ If you want to stop docker container just run `docker stop prismo-db`, to start 
 ## Installation
 
 1. Install virtualenv in project's directory:
-	```sh
-    $ python3 -m venv ./virtualenv
+   ```sh
+   $ python3 -m venv ./virtualenv
    ```
-   
+
 2. Activate virtual environment
-	
+
    ```
    source ./virtualenv/bin/activate
    ```
-   
+
 3. Install required packages:
 
   ```sh
@@ -93,11 +97,18 @@ If you want to stop docker container just run `docker stop prismo-db`, to start 
   ```
 
 4. Run app:
-  ```sh
+
+   ```sh
    $ export FLASK_APP=application.py 
    $ flask run
-  ```
-  table.sql contains create statements for database tables
+   ```
+   4.1 Run for debugging and development: (it will reload app on code changes and enable debug mode)
+   ```sh
+   $ export FLASK_APP=application.py 
+   $ flask run --debug
+    ```
+
+The application doesn't create any table in database, so you should create it manually. See section "Prepare database"
 
 Configuration
 =============
@@ -121,4 +132,20 @@ logging:
 ```
 
 path to config file is set in `applicaiton.py`. By default, config file name is `config.cfg`
+
+## Logging
+
+All logs are stored in `log.txt` file.
+
+### Project data structure
+
+All data stored in postgres database. Currently, we have three tables:
+
+- users - the table with users data. It contains three columns: name, key, last_enter. Name is user's name, key is
+  unique key (getting from rfid), last_enter is timestamp of last enter to hackerspace.
+- permissions - the table with permissions. It contains two columns: device_id and user_key. Device_id is unique id of
+  device, user_key is key of user, who has access to this device.
+- logs - the table with logs. It contains three columns: timestamp, device_id, user_key. Timestamp is timestamp of
+  event, device_id is unique id of device, user_key is key of user, who has access to this device.
+
 

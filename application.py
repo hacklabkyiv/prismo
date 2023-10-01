@@ -1,24 +1,17 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
-"""
-Core of Hacklab Admin Panel
-
-@author: Artem Synytsyn
-"""
-
-import datetime
 import logging
 import os
 import sys
+from datetime import datetime
 from logging.handlers import RotatingFileHandler
 from os.path import getmtime
 
-import psycopg2 as psycopg
 import yaml
-from flask import Flask, render_template, request, abort
+from flask import Flask, render_template, request
 
-from log_repository import get_logs
+from app.data.log_repository import get_logs
+from app.data.permissions_repository import grant_permission, reject_permission
+from app.data.user_repository import delete_user, add_user
+from users_view_model import get_access_control_panel
 
 try:
     from yaml import CLoader as Loader, CDumper
@@ -32,8 +25,8 @@ CONFIG_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.
 try:
     cfg = yaml.load(open(CONFIG_FILE, 'r'), Loader=Loader)
 except IOError as e:
-    logger.error("Config file not found!")
-    logger.error("Exception: %s" % str(e))
+    logging.error("Config file not found!")
+    logging.error("Exception: %s" % str(e))
     sys.exit(1)
 
 LATEST_KEY_FILE = cfg['data']['latest-key-file']
@@ -41,6 +34,7 @@ LATEST_KEY_FILE = cfg['data']['latest-key-file']
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 logger = logging.getLogger(__name__)
+
 if cfg['logging']['debug'] is True:
     app.config['DEBUG'] = True
     logging.basicConfig(level=logging.DEBUG)
@@ -71,72 +65,44 @@ def get_latest_key_info():
     return "%s updated at: %s" % (key_value, mod_time_converted)
 
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/user', methods=['POST'])
+def add_user_route():
+    user_name = request.form['nick']
+    user_key = request.form['key']
+    add_user(user_name, user_key)
+    return 'OK'
+
+
+@app.route('/user', methods=['DELETE'])
+def delete_user_route():
+    user_key = request.form['user_key']
+    delete_user(user_key)
+    return 'OK'
+
+
+@app.route('/permission', methods=['POST'])
+def grant_permission_route():
+    user_key = request.form['user_key']
+    permission = request.form['device_id']
+    grant_permission(user_key, permission)
+    return 'OK'
+
+
+@app.route('/permission', methods=['DELETE'])
+def reject_permission_route():
+    user_key = request.form['user_key']
+    permission = request.form['device_id']
+    reject_permission(user_key, permission)
+    return 'OK'
+
+
+@app.route('/', methods=['GET'])
 def index():
-    try:
-        conn = psycopg.connect(user=cfg['data']['user'],
-                               password=cfg['data']['password'],
-                               host=cfg['data']['host'],
-                               port=cfg['data']['port'],
-                               database=cfg['data']['name'])
-    except (Exception, psycopg.DatabaseError) as error:
-        logger.error("Error while connecting to PostgresSQL: %s" % error)
-        abort(500)
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM users')
-    all_column_names = list(description[0] for description in
-                            cursor.description)
+    access_control_panel = get_access_control_panel()
+    logger.info('Access control panel data: %s' % access_control_panel)
 
-    # Get column names for devices, needed access control. Exclude the others
-    access_info_columns = list(filter(lambda value: not value in ['id', 'name', 'key', 'last_enter'], all_column_names))
-    ordered_column_names = ['id', 'name', 'key', 'last_enter']
-    ordered_column_names.extend(access_info_columns)
-
-    cursor.execute('SELECT id, name, key, last_enter FROM users')
-    user_info = cursor.fetchall()
-    cursor.execute('SELECT %s FROM users'
-                   % ','.join(access_info_columns))
-    user_access_info = cursor.fetchall()
-    template_data = zip(user_info, user_access_info)
-
-    # Updating latest key information
-    latest_key_info = get_latest_key_info()
-    # Parsing data from frontend: editing access, user additioin and deletion
-    if request.method == 'POST':
-        operation = request.form['operation']
-        if operation == 'edit':
-            user_id = request.form['id']
-            user_device = request.form['device']
-            user_state = request.form['state']
-            if user_state == 'true':
-                user_state = '1'
-            elif user_state == 'false':
-                user_state = '0'
-
-            logger.info('Updated user info: %s, %s, %s' % (user_id,
-                                                           access_info_columns[int(user_device)],
-                                                           user_state))
-            command = "UPDATE users SET %s = '%s' WHERE id = %s" \
-                      % (access_info_columns[int(user_device)], user_state,
-                         user_id)
-            cursor.execute(command)
-            conn.commit()
-        elif operation == 'delete':
-            user_id = request.form['id']
-            cursor.execute('DELETE FROM users WHERE id=%s', (user_id,))
-            conn.commit()
-            logger.info('User deleted, id: %s' % user_id)
-        elif operation == 'add':
-            user_name = request.form['nick']
-            user_key = request.form['key']
-            cursor.execute('INSERT INTO users(name, key) VALUES(%s, %s)', (user_name, user_key))
-            conn.commit()
-            logger.info('User added: %s, %s' % (user_name, user_key))
-    cursor.close()
-    conn.close()
-    return render_template('index.html', data=template_data,
-                           column_names=ordered_column_names,
-                           latest_key_info=latest_key_info)
+    return render_template('index.html', access_control_panel=access_control_panel,
+                           latest_key_info=get_latest_key_info())
 
 
 @app.route('/log_view')
