@@ -36,7 +36,7 @@
                 <tbody id="table_body">
                 {% for row in access_control_panel.rows %}
                 <tr>
-                    <td>{{row.user_name}}</td>
+                    <td><a href="/user/{{row.user_key}}">{{row.user_name}}</a></td>
                     <td>{{row.user_key}}</td>
                     <td>{{row.last_enter}}</td>
                     {% for permission in row.permissions %}

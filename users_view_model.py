@@ -1,42 +1,19 @@
 from dataclasses import dataclass
 from typing import List
 
-from app.data.database_driver import establish_connection
+from app.data.device_repository import get_all_devices
 from app.data.permissions_repository import get_user_permissions
-from app.data.user_repository import get_all_users
-
-
-@dataclass
-class Device:
-    device_key: str
-    device_name: str
-
-    def __init__(self, device_key, device_name):
-        self.device_key = device_key
-        self.device_name = device_name
-
-
-def get_devices():
-    with establish_connection() as connection:
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT id, name FROM devices order by name")
-            rows = cursor.fetchall()
-
-            devices = []
-            for row in rows:
-                device_id, device_name = row
-                device = Device(device_id, device_name)
-                devices.append(device)
-
-        connection.commit()
-
-    return devices
+from app.data.user_repository import get_all_users, UserWithLastEnter
 
 
 @dataclass()
 class PermissionUiModel:
     isGranted: bool
     device_key: str
+
+    def __init__(self, is_granted, device_key):
+        self.isGranted = is_granted
+        self.device_key = device_key
 
 
 @dataclass
@@ -63,29 +40,29 @@ class AccessControlPanel:
         self.rows = rows
 
 
-def get_access_control_panel():
+def get_access_control_panel() -> AccessControlPanel:
     users = get_all_users()
-    devices = get_devices()
+    devices = get_all_devices()
 
     header = ['User name', 'User key', 'Last enter']
     for device in devices:
-        header.append(device.device_name)
+        header.append(device.name)
 
     rows = []
 
     for user in users:
-        access_control_panel_row = build_user_permissions_row(user, devices)
+        access_control_panel_row = build_user_access_control_permissions_row(user, devices)
         rows.append(access_control_panel_row)
 
     return AccessControlPanel(header, rows)
 
 
-def build_user_permissions_row(user, devices):
-    grated_user_device = get_user_permissions(user.user_key)
+def build_user_access_control_permissions_row(user: UserWithLastEnter, devices):
+    grated_user_device = get_user_permissions(user.user.key)
     user_permissions_ui_models = []
     for device in devices:
-        permission_model = PermissionUiModel(device.device_key in grated_user_device, device.device_key)
+        permission_model = PermissionUiModel(device.id in grated_user_device, device.id)
         user_permissions_ui_models.append(permission_model)
 
-    return AccessControlPanelRow(user.user_name, user.user_key, user.last_enter,
+    return AccessControlPanelRow(user.user.name, user.user.key, user.last_enter,
                                  user_permissions_ui_models)

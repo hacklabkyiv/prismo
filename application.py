@@ -8,9 +8,10 @@ from os.path import getmtime
 import yaml
 from flask import Flask, render_template, request
 
+from app.data.device_repository import get_full_device, get_all_devices
 from app.data.log_repository import get_logs
 from app.data.permissions_repository import grant_permission, reject_permission, get_user_with_permission_to_device
-from app.data.user_repository import delete_user, add_user
+from app.data.user_repository import delete_user, add_user, get_full_user
 from app.data.work_logs_repository import start_work, finish_work, get_full_logs
 from users_view_model import get_access_control_panel
 
@@ -131,3 +132,18 @@ def log_view():
 @app.route('/full_log_view')
 def full_log_view():
     return render_template('full_log_view.html', logs=get_full_logs())
+
+
+@app.route('/devices')
+def devices():
+    return render_template('devices.html', devices=get_all_devices())
+
+
+@app.route('/user/<user_key>', methods=['GET'])
+def user_page(user_key):
+    return render_template("user_page.html", full_user=get_full_user(user_key))
+
+
+@app.route("/device/<device_id>", methods=["GET"])
+def device_page(device_id):
+    return render_template("device_page.html", full_device=get_full_device(device_id))

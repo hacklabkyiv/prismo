@@ -15,7 +15,7 @@ class UserPermission:
         self.permissions = permissions
 
 
-def get_user_permissions(user_key):
+def get_user_permissions(user_key) -> List[str]:
     with establish_connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute("SELECT device_id FROM permissions WHERE user_key = %s", (user_key,))

@@ -14,7 +14,7 @@
             </tr>
             {% for log in logs %}
             <tr>
-                <td>{{ log.user_name }}</td>
+                <td><a href="/user/{{ log.user.key }}">{{ log.user.name }}</a></td>
                 <td>{{ log.device_name }}</td>
                 <td>{{ log.start_time }}</td>
                 <td>{{ log.end_time }}</td>
