@@ -58,10 +58,10 @@ yourself.
    visitors=# CREATE TABLE users ( name text, key text, last_enter timestamp);
    ```
    ```bash
-   visitors=# CREATE TABLE permissions ( device_id text not null, user_key  text );
+   visitors=# CREATE TABLE devices ( id text not null, name text not null );
    ```
    ```bash
-   visitors=# CREATE TABLE permissions ( device_id text not null, user_key  text );
+   visitors=# CREATE TABLE permissions ( device_id text not null, user_key text not null );
    ```
 
 5. Show contents of table:
