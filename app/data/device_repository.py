@@ -28,9 +28,8 @@ class DeviceLog:
     start_time: str
     end_time: str
 
-    def __init__(self, user_key, user_name, start_time, end_time):
-        self.user_key = user_key
-        self.user_name = user_name
+    def __init__(self, user, start_time, end_time):
+        self.user = user
         self.start_time = start_time
         self.end_time = end_time
 
@@ -49,28 +48,30 @@ class FullDevice:
         self.user_with_access = user_with_access
 
 
-def get_full_device(device_id):
+def get_full_device(device_id) -> FullDevice:
     connection = get_db_connection()
-    row = connection.cursor().execute(f"SELECT id, name FROM devices WHERE id='{device_id}'").fetchall()
+    row = connection.cursor().execute("SELECT id, name FROM devices WHERE id=?", (device_id,)).fetchall()
 
     if len(row) == 0:
         return None
 
     device_id, device_name = row[0]
 
-    rows = connection.cursor().execute(f"SELECT u.key, u.name, start_time, end_time "
-                                       "FROM work_logs join users u on u.key = user_key "
-                                       "WHERE device_id='{device_id}' order by start_time desc").fetchall()
+    rows = connection.cursor().execute(
+        "SELECT u.key, u.name, start_time, end_time FROM work_logs join users u on u.key = user_key "
+        "WHERE device_id=? order by start_time desc", (device_id,)
+    ).fetchall()
 
     logs = []
     for row in rows:
         user_key, user_name, start_time, end_time = row
         human_start_time = convert_time_to_human(start_time)
         human_end_time = convert_time_to_human(end_time)
-        logs.append(DeviceLog(user_key, user_name, human_start_time, human_end_time))
+        logs.append(DeviceLog(UserDto(user_key, user_name), human_start_time, human_end_time))
 
     rows = connection.cursor().execute(
-        f"SELECT u.key, u.name FROM permissions JOIN users u ON u.key = permissions.user_key WHERE permissions.device_id='{device_id}'"
+        "SELECT u.key, u.name FROM permissions JOIN users u ON u.key = permissions.user_key WHERE "
+        "permissions.device_id=?", (device_id,)
     ).fetchall()
     user_with_access = []
     for row in rows:

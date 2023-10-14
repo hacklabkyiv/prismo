@@ -23,7 +23,7 @@
                     </tr>
                     {% for log in full_device.logs %}
                     <tr>
-                        <td>{{ log.user_name }}</td>
+                        <td>{{ log.user.name }}</td>
                         <td>{{ log.start_time }}</td>
                         <td>{{ log.end_time }}</td>
                     </tr>

@@ -45,7 +45,9 @@ class UserDevices:
 
 def get_user(user_key: str) -> UserDto:
     connection = get_db_connection()
-    rows = connection.execute(f"SELECT key, name FROM users WHERE key={user_key}").fetchall()
+    rows = connection.execute(
+        "SELECT key, name FROM users WHERE key=?", (user_key,)
+    ).fetchall()
 
     if len(rows) == 0:
         return None
@@ -58,7 +60,9 @@ def get_user(user_key: str) -> UserDto:
 
 def get_full_user(user_key):
     connection = get_db_connection()
-    row = connection.execute(f"SELECT key, name FROM users WHERE key='{user_key}'").fetchall()
+    row = connection.execute(
+        "SELECT key, name FROM users WHERE key=?", (user_key,)
+    ).fetchall()
 
     if len(row) == 0:
         return None
@@ -66,7 +70,8 @@ def get_full_user(user_key):
     user_key, user_name = row[0]
 
     rows = connection.execute(
-        f"SELECT d.id, d.name FROM permissions JOIN devices d ON d.id = permissions.device_id WHERE permissions.user_key = '{user_key}'",
+        "SELECT d.id, d.name FROM permissions JOIN devices d ON d.id = permissions.device_id "
+        "WHERE permissions.user_key = ?", (user_key,)
     ).fetchall()
 
     user_devices = []
@@ -75,7 +80,9 @@ def get_full_user(user_key):
         user_devices.append(UserDevices(device_name, device_id))
 
     rows = connection.execute(
-        f"SELECT d.name, start_time, end_time FROM work_logs JOIN devices d ON work_logs.device_id = d.id WHERE work_logs.user_key='{user_key}' ORDER BY start_time DESC",
+        "SELECT d.name, start_time, end_time FROM work_logs "
+        "JOIN devices d ON work_logs.device_id = d.id "
+        "WHERE work_logs.user_key=? ORDER BY start_time DESC", (user_key,)
     ).fetchall()
 
     user_logs = []
@@ -92,7 +99,7 @@ def get_full_user(user_key):
 
 def delete_user(user_key):
     connection = get_db_connection()
-    connection.execute(f'DELETE FROM users WHERE key={user_key}')
+    connection.execute("DELETE FROM users WHERE key=?", (user_key,))
     connection.commit()
     connection.close()
     logging.info('User with id %s was deleted' % (user_key,))
@@ -100,7 +107,7 @@ def delete_user(user_key):
 
 def add_user(user_name, user_key):
     connection = get_db_connection()
-    connection.execute(f"INSERT INTO users(name, key) VALUES( '{user_name}','{user_key}')")
+    connection.execute("INSERT INTO users(name, key) VALUES(?,?)", (user_name, user_key))
     logging.info('User added: %s, %s' % (user_name, user_key))
     connection.commit()
     connection.close()

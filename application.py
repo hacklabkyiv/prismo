@@ -5,7 +5,6 @@ from flask import Flask, render_template, request
 
 from app.config import cfg
 from app.data.device_repository import get_full_device, get_all_devices
-from app.data.log_repository import get_logs
 from app.data.permissions_repository import grant_permission, reject_permission, get_user_with_permission_to_device
 from app.data.user_repository import delete_user, add_user, get_full_user
 from app.data.work_logs_repository import start_work, finish_work, get_full_logs

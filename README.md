@@ -28,51 +28,71 @@ Install docker on your system.
 By default, this should be run by Prismo admin process, but for debugging purpose you should run this commands by
 yourself.
 
-1. Run docker with. Here we will create database with name `prismo-db` inside docker container.
+##### Database
 
-   ```bash
-   docker run -d --name prismo-db -e POSTGRES_DB=prismo -e POSTGRES_PASSWORD=<password> -e POSTGRES_USER=admin -p 5432:5432 -v $(pwd)/data:/var/lib/postgresql/data postgres
-   ```
+We use the sqlite database, the file for database is stored in `database.db` file.
 
-2. Let's connect to database
+Schema of database:
 
-   We use the sqlite database, the file for database is stored in `database.db` file.
+```mermaid
+classDiagram
+    direction BT
+    class devices {
+        text id
+        text name
+    }
+    class permissions {
+        text device_id
+        text user_key
+    }
 
-3. Now you are in SQL console, basic commands are
+    class users {
+        text name
+        text key
+    }
 
-4. Let's create table with users. Also we will create two columns with access to door and lathe.
+    class work_logs {
+        text user_key
+        text device_id
+        integer start_time
+        integer end_time
+    }
 
-   ```bash
-   CREATE TABLE users (name text, key text);
-   ```
-   ```bash
-   CREATE TABLE devices ( id text not null, name text not null );
-   ```
-   ```bash
-   CREATE TABLE permissions ( device_id text not null, user_key text not null );
-   ```
-   ```bash
-   create table work_logs
-   (
-       user_key   text not null,
-       device_id  text not null,
-       start_time integer,
-       end_time   integer
-   );
-   ```
+    permissions --> devices
+    work_logs --> devices
+    work_logs --> users
+    permissions --> users
+```
 
-5. Show contents of table:
+Create database schema:
 
-   ```bash
-   # SELECT * FROM users;
-    name | key | last_enter 
-   ----+------+-----+------
-   (0 rows)
-   ```
+```bash
+create table devices
+(
+    id   text not null,
+    name text not null
+);
 
-6. Quit database with `\q`
+create table permissions
+(
+    device_id text not null,
+    user_key  text not null
+);
 
-If you want to stop docker container just run `docker stop prismo-db`, to start it again use `docker start prismo-db`
+create table users
+(
+    name text,
+    key  text
+);
+
+create table work_logs
+(
+    user_key   text not null,
+    device_id  text not null,
+    start_time integer,
+    end_time   integer
+);
+````
 
 ## Installation
 
@@ -90,23 +110,25 @@ If you want to stop docker container just run `docker stop prismo-db`, to start 
 3. Install required packages:
 
   ```sh
-   $ pip3 install -r requirements.txt
+  pip3 install -r requirements.txt
   ```
 
 4. Run app:
 
    ```sh
-   $ export FLASK_APP=application.py 
-   $ flask run
+   export FLASK_APP=application.py 
+   flask run
    ```
    4.1 Run for debugging and development: (it will reload app on code changes and enable debug mode)
    ```sh
-   $ export FLASK_APP=application.py 
-   $ flask run --debug
+   export FLASK_APP=application.py 
+   flask run --debug
     ```
 5. Server autostart using `supervisor`
 
-Supervisor is handy tool for autostart different scripts in userspace(supervisord.org). Here is example of configuration script for this:
+Supervisor is handy tool for autostart different scripts in userspace(supervisord.org). Here is example of configuration
+script for this:
+
   ```
   [program:prismo]
   command=/home/prismo/prismo/.venv/bin/python /home/prismo/prismo/.venv/bin/gunicorn --bind 0.0.0.0:8000 application:app
@@ -117,10 +139,11 @@ Supervisor is handy tool for autostart different scripts in userspace(supervisor
   redirect_stderr=true
   stderr_logfile=/var/log/prismo/prismo.err.log
   stdout_logfile=/var/log/prismo/prismo.out.log  
-
   ```
+
 6. Nginx setup
-After installation of nginx(`sudo apt install nginx`) edit config `sudo vim /etc/nginx/conf.d/virtual.conf`
+   After installation of nginx(`sudo apt install nginx`) edit config `sudo vim /etc/nginx/conf.d/virtual.conf`
+
   ```
   server {
       listen       80;
@@ -131,28 +154,23 @@ After installation of nginx(`sudo apt install nginx`) edit config `sudo vim /etc
       }
   }
   ```
+
 This config should be placed as `prismo.conf` into `/etc/supervisor/conf.d/`
 The application doesn't create any table in database, so you should create it manually. See section "Prepare database"
 
 Configuration
 =============
 
-Currently config is stored in YAML file. Example of config:
+Currently, config is stored in YAML file. Example of config:
 
 ```
-# Example config file
-data:
-    user: prismo
-    password: 12345678 
-    host: localhost
-    port: 5432
-    name: visitors
-    latest-key-file: ./key.txt
 logging:
     debug: Yes
     logfile: log.txt
     logsize_kb: 1000
     rolldepth: 3
+slack:
+    token: <slack_token>
 ```
 
 path to config file is set in `applicaiton.py`. By default, config file name is `config.cfg`

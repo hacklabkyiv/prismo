@@ -26,7 +26,7 @@ def start_work(user_key, device_id):
     current_time = int(round(time.time()))
 
     connection.cursor().execute(
-        f"INSERT INTO work_logs (user_key, device_id, start_time) values ('{user_key}', '{device_id}', '{current_time}')"
+        "INSERT INTO work_logs (user_key, device_id, start_time) values (?, ?, ?)", (user_key, device_id, current_time)
     )
 
     connection.commit()
@@ -49,7 +49,10 @@ def finish_work(user_key, device_id):
 def get_full_logs() -> list[WorkLog]:
     connection = get_db_connection()
     rows = connection.cursor().execute(
-        "select u.name, u.key, d.name, start_time, end_time from work_logs join users u on u.key = work_logs.user_key join devices d on work_logs.device_id = d.id order by start_time desc"
+        "SELECT u.name, u.key, d.name, start_time, end_time FROM work_logs "
+        "JOIN users u ON u.key = work_logs.user_key "
+        "JOIN devices d ON work_logs.device_id = d.id "
+        "ORDER BY start_time DESC"
     ).fetchall()
 
     work_logs = []

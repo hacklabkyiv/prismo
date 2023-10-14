@@ -1,7 +1,9 @@
 import time
 from dataclasses import dataclass
 
-from app.data.database_driver import establish_connection
+import psycopg2 as psycopg
+
+from app.config import cfg
 
 
 @dataclass
@@ -12,6 +14,16 @@ class Report:
     def __init__(self, user_name: str, device_name: str):
         self.user_name = user_name
         self.device_name = device_name
+
+
+def establish_connection():
+    return psycopg.connect(
+        user=cfg['data']['user'],
+        password=cfg['data']['password'],
+        host=cfg['data']['host'],
+        port=cfg['data']['port'],
+        database=cfg['data']['name']
+    )
 
 
 def check_devices_limits() -> list[Report]:
