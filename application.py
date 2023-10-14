@@ -1,6 +1,4 @@
 import logging
-import threading
-import time
 from logging.handlers import RotatingFileHandler
 
 from flask import Flask, render_template, request
@@ -11,7 +9,6 @@ from app.data.log_repository import get_logs
 from app.data.permissions_repository import grant_permission, reject_permission, get_user_with_permission_to_device
 from app.data.user_repository import delete_user, add_user, get_full_user
 from app.data.work_logs_repository import start_work, finish_work, get_full_logs
-from app.limits.limit_checker import check_devices_limits
 from app.slack.slack_sender import send_user_enter
 from users_view_model import get_access_control_panel
 
@@ -31,6 +28,7 @@ if cfg['logging']['debug'] is True:
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     log_handler.setFormatter(formatter)
     logger.addHandler(log_handler)
+
 
 @app.route('/user', methods=['POST'])
 def add_user_route():
@@ -89,11 +87,6 @@ def start_work_router(user_key, device_id):
 def finish_work_router(user_key, device_id):
     finish_work(user_key, device_id)
     return 'OK'
-
-
-@app.route('/log_view')
-def log_view():
-    return render_template('log_view.html', logs=get_logs())
 
 
 @app.route('/full_log_view')
