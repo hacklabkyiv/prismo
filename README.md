@@ -104,7 +104,34 @@ If you want to stop docker container just run `docker stop prismo-db`, to start 
    $ export FLASK_APP=application.py 
    $ flask run --debug
     ```
+5. Server autostart using `supervisor`
 
+Supervisor is handy tool for autostart different scripts in userspace(supervisord.org). Here is example of configuration script for this:
+  ```
+  [program:prismo]
+  command=/home/prismo/prismo/.venv/bin/python /home/prismo/prismo/.venv/bin/gunicorn --bind 0.0.0.0:8000 application:app
+  directory=/home/prismo/prismo
+  startsecs=5
+  autostart=true
+  autorestart=true
+  redirect_stderr=true
+  stderr_logfile=/var/log/prismo/prismo.err.log
+  stdout_logfile=/var/log/prismo/prismo.out.log  
+
+  ```
+6. Nginx setup
+After installation of nginx(`sudo apt install nginx`) edit config `sudo vim /etc/nginx/conf.d/virtual.conf`
+  ```
+  server {
+      listen       80;
+      server_name  prismo.local;
+  
+      location / {
+          proxy_pass http://127.0.0.1:8000;
+      }
+  }
+  ```
+This config should be placed as `prismo.conf` into `/etc/supervisor/conf.d/`
 The application doesn't create any table in database, so you should create it manually. See section "Prepare database"
 
 Configuration
