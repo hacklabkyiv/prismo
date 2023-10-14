@@ -19,7 +19,7 @@ def check_devices_limits() -> list[Report]:
         with connection.cursor() as cursor:
             current_time = time.time()
             max_time = 100
-            cursor.execute("""\
+            cursor.execute("""
                 SELECT sum(COALESCE(work_logs.end_time, %s) - work_logs.start_time) as total_use_time, 
                        user_key,
                        device_id,

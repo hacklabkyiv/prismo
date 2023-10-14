@@ -31,13 +31,15 @@ yourself.
 1. Run docker with. Here we will create database with name `prismo-db` inside docker container.
 
    ```bash
-   $ docker run -d --name prismo-db -e POSTGRES_PASSWORD=12345678 -e POSTGRES_DB=visitors -e POSTGRES_USER=prismo -p 5432:5432 -v $(pwd)/data:/var/lib/postgresql/data postgres
+   docker run -d --name prismo-db -e POSTGRES_DB=prismo -e POSTGRES_PASSWORD=<password> -e POSTGRES_USER=admin -p 5432:5432 -v $(pwd)/data:/var/lib/postgresql/data postgres
    ```
 
 2. Let's connect to database
 
    ```bash
-   $ $ docker exec -it prismo-db psql -h localhost -U prismo -d visitors
+   docker exec -it prismo-db psql -h localhost -U admin -d prismo
+   ```
+   ```bash
    psql (12.2 (Debian 12.2-2.pgdg100+1))
    Type "help" for help.
    
@@ -55,13 +57,22 @@ yourself.
 4. Let's create table with users. Also we will create two columns with access to door and lathe.
 
    ```bash
-   visitors=# CREATE TABLE users ( name text, key text, last_enter timestamp);
+   CREATE TABLE users (name text, key text);
    ```
    ```bash
-   visitors=# CREATE TABLE devices ( id text not null, name text not null );
+   CREATE TABLE devices ( id text not null, name text not null );
    ```
    ```bash
-   visitors=# CREATE TABLE permissions ( device_id text not null, user_key text not null );
+   CREATE TABLE permissions ( device_id text not null, user_key text not null );
+   ```
+   ```bash
+   create table work_logs
+   (
+       user_key   text not null,
+       device_id  text not null,
+       start_time integer,
+       end_time   integer
+   );
    ```
 
 5. Show contents of table:

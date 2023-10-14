@@ -10,16 +10,6 @@ from app.data.user_dto import UserDto
 
 
 @dataclass
-class UserWithLastEnter:
-    user: UserDto
-    last_enter: string
-
-    def __init__(self, user, last_enter):
-        self.user = user
-        self.last_enter = last_enter
-
-
-@dataclass
 class UserWorkLog:
     device_name: str
     start_time: str
@@ -121,20 +111,16 @@ def add_user(user_name, user_key):
         connection.commit()
 
 
-def get_all_users() -> list[UserWithLastEnter]:
+def get_all_users() -> list[UserDto]:
     with establish_connection() as connection:
         with connection.cursor() as cursor:
-            cursor.execute("SELECT key, name, last_enter FROM users")
+            cursor.execute("SELECT key, name FROM users")
             rows = cursor.fetchall()
 
             users = []
             for row in rows:
-                key, name, last_enter_timestamp = row
-                if last_enter_timestamp is None:
-                    last_enter = None
-                else:
-                    last_enter = datetime.datetime.fromtimestamp(last_enter_timestamp).strftime('%Y-%m-%d %H:%M:%S')
-                user = UserWithLastEnter(UserDto(key, name), last_enter)
+                key, name = row
+                user = UserDto(key, name)
                 users.append(user)
 
         connection.commit()

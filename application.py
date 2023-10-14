@@ -1,9 +1,7 @@
 import logging
 import threading
 import time
-from datetime import datetime
 from logging.handlers import RotatingFileHandler
-from os.path import getmtime
 
 from flask import Flask, render_template, request
 
@@ -17,26 +15,9 @@ from app.limits.limit_checker import check_devices_limits
 from app.slack.slack_sender import send_user_enter
 from users_view_model import get_access_control_panel
 
-LATEST_KEY_FILE = cfg['data']['latest-key-file']
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 logger = logging.getLogger(__name__)
-
-
-def my_check():
-    print(check_devices_limits())
-
-
-def foo_target():
-    while True:
-        my_check()
-        time.sleep(10)
-
-
-t = threading.Thread(target=foo_target)
-t.daemon = True
-t.start()
 
 if cfg['logging']['debug'] is True:
     app.config['DEBUG'] = True
@@ -50,23 +31,6 @@ if cfg['logging']['debug'] is True:
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     log_handler.setFormatter(formatter)
     logger.addHandler(log_handler)
-
-
-def get_latest_key_info():
-    try:
-        with open(LATEST_KEY_FILE, 'r') as f:
-            key_value = f.read()
-    except FileNotFoundError:
-        key_value = '<absent>'
-    # Getting modification datetime
-    try:
-        mod_time = getmtime(LATEST_KEY_FILE)
-        mod_time_converted = datetime.datetime.fromtimestamp(
-            mod_time).strftime('%Y-%m-%d %H:%M:%S')
-    except OSError:
-        mod_time_converted = '<unknown>'
-    return "%s updated at: %s" % (key_value, mod_time_converted)
-
 
 @app.route('/user', methods=['POST'])
 def add_user_route():
@@ -104,8 +68,7 @@ def index():
     access_control_panel = get_access_control_panel()
     logger.info('Access control panel data: %s' % access_control_panel)
 
-    return render_template('index.html', access_control_panel=access_control_panel,
-                           latest_key_info=get_latest_key_info())
+    return render_template('index.html', access_control_panel=access_control_panel)
 
 
 @app.route('/device/user_with_access/<device_id>', methods=['GET'])
