@@ -36,23 +36,9 @@ yourself.
 
 2. Let's connect to database
 
-   ```bash
-   docker exec -it prismo-db psql -h localhost -U admin -d prismo
-   ```
-   ```bash
-   psql (12.2 (Debian 12.2-2.pgdg100+1))
-   Type "help" for help.
-   
-   visitors=# 
-   ```
+   We use the sqlite database, the file for database is stored in `database.db` file.
 
 3. Now you are in SQL console, basic commands are
-
-   ```
-   \? # Get help
-   \d # Describe table
-   \q # Quit psql
-   ```
 
 4. Let's create table with users. Also we will create two columns with access to door and lathe.
 
