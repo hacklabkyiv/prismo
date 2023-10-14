@@ -54,6 +54,21 @@ class UserDevices:
         self.device_id = device_id
 
 
+def get_user(user_key: str) -> UserDto:
+    with establish_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT key, name FROM users WHERE key=%s", (user_key,))
+            row = cursor.fetchall()
+
+            if len(row) == 0:
+                return None
+
+            user_key, user_name = row[0]
+            user = UserDto(user_key, user_name)
+        connection.commit()
+    return user
+
+
 def get_full_user(user_key):
     with establish_connection() as connection:
         with connection.cursor() as cursor:

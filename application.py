@@ -1,41 +1,42 @@
 import logging
-import os
-import sys
+import threading
+import time
 from datetime import datetime
 from logging.handlers import RotatingFileHandler
 from os.path import getmtime
 
-import yaml
 from flask import Flask, render_template, request
 
+from app.config import cfg
 from app.data.device_repository import get_full_device, get_all_devices
 from app.data.log_repository import get_logs
 from app.data.permissions_repository import grant_permission, reject_permission, get_user_with_permission_to_device
 from app.data.user_repository import delete_user, add_user, get_full_user
 from app.data.work_logs_repository import start_work, finish_work, get_full_logs
+from app.limits.limit_checker import check_devices_limits
+from app.slack.slack_sender import send_user_enter
 from users_view_model import get_access_control_panel
-
-try:
-    from yaml import CLoader as Loader, CDumper
-except ImportError:
-    from yaml import Loader
-
-# Configuration file
-CONFIG_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.cfg')
-
-# Initial setup
-try:
-    cfg = yaml.load(open(CONFIG_FILE, 'r'), Loader=Loader)
-except IOError as e:
-    logging.error("Config file not found!")
-    logging.error("Exception: %s" % str(e))
-    sys.exit(1)
 
 LATEST_KEY_FILE = cfg['data']['latest-key-file']
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 logger = logging.getLogger(__name__)
+
+
+def my_check():
+    print(check_devices_limits())
+
+
+def foo_target():
+    while True:
+        my_check()
+        time.sleep(10)
+
+
+t = threading.Thread(target=foo_target)
+t.daemon = True
+t.start()
 
 if cfg['logging']['debug'] is True:
     app.config['DEBUG'] = True
@@ -114,6 +115,9 @@ def users_with_access_to_device(device_id):
 
 @app.route('/device/start_work/<user_key>/<device_id>', methods=['POST'])
 def start_work_router(user_key, device_id):
+    if device_id == 'door':
+        send_user_enter(user_key)
+
     start_work(user_key, device_id)
     return 'OK'
 

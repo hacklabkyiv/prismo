@@ -1,6 +1,5 @@
 import time
 from dataclasses import dataclass
-from typing import List
 
 from app.data.database_driver import establish_connection
 from app.data.time_convert import convert_time_to_human
@@ -26,6 +25,7 @@ def start_work(user_key, device_id):
         with connection.cursor() as cursor:
             cursor.execute("INSERT INTO work_logs (user_key, device_id, start_time) values (%s, %s, %s)",
                            (user_key, device_id, time.time()))
+        connection.commit()
 
 
 def finish_work(user_key, device_id):
@@ -33,7 +33,7 @@ def finish_work(user_key, device_id):
         with connection.cursor() as cursor:
             cursor.execute("UPDATE work_logs SET end_time = %s WHERE user_key = %s AND device_id = %s",
                            (time.time(), user_key, device_id))
-
+        connection.commit()
 
 def get_full_logs() -> list[WorkLog]:
     with establish_connection() as connection:
