@@ -1,41 +1,51 @@
-function onCheckboxChange(context) {
-	var data = new FormData();
-	data.append('operation', 'edit');
-	data.append('id', context.value.split(",")[1]);
-	data.append('device', context.value.split(",")[0]);
-	data.append('state', context.checked);
+function onUserPermissionChange(user_key, device_id, context) {
+    console.log('change permission for user ' + user_key + ' on device ' + device_id);
 
-	var xhr = new XMLHttpRequest();
+    var data = new FormData();
+	data.append('user_key', user_key);
+	data.append('device_id', device_id);
+
+    if (context.checked) {
+        method = 'POST';
+    } else {
+        method = 'DELETE';
+    }
+
+    console.log('method: ' + method);
+
+    var xhr = new XMLHttpRequest();
 	xhr.onreadystatechange = function () {
 		if (xhr.readyState == 4) {
 			if (xhr.status != 200) {
 				alert("Cannot get updated table!");
+			} else {
+				// Reload page when we received response
+				location.reload(true);
 			}
 		}
 	}
-	xhr.open('POST', '/', true);
+	xhr.open(method, '/permission', true);
 	xhr.send(data);
 }
 
-function onDeleteClick(id_value, a) {
-	var data = new FormData();
-	data.append('operation', 'delete');
-	data.append('id', id_value);
-	data.append('device', '');
-	data.append('state', '');
+function onUserDeleteClick(user_key, a) {
+    console.log('onUserDeleteClick ' + user_key);
+
+    var data = new FormData();
+	data.append('user_key', user_key);
 
 	var xhr = new XMLHttpRequest();
-	var table = document.getElementById('tblData');
-	var rowIndex = a.parentNode.parentNode.rowIndex;
-	table.deleteRow(rowIndex);
 	xhr.onreadystatechange = function () {
 		if (xhr.readyState == 4) {
 			if (xhr.status != 200) {
 				alert("Cannot get updated table!");
+			} else {
+				// Reload page when we received response
+				location.reload(true);
 			}
 		}
 	}
-	xhr.open('POST', '/', true);
+	xhr.open('DELETE', '/user', true);
 	xhr.send(data);
 }
 
@@ -53,7 +63,6 @@ function addUser() {
 		return 0;
 	}
 
-	data.append('operation', 'add');
 	data.append('nick', name);
 	data.append('key', key);
 
@@ -68,6 +77,6 @@ function addUser() {
 			}
 		}
 	}
-	xhr.open('POST', '/', true);
+	xhr.open('POST', '/user', true);
 	xhr.send(data);
 }

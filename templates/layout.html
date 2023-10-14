@@ -6,7 +6,6 @@
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/intro.js/2.7.0/intro.js"></script>
     <script src="static/js/rfid.js"></script>
-    <script src="static/js/macs.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intro.js/2.7.0/introjs.css">
@@ -23,10 +22,9 @@
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
               <ul class="navbar-nav mr-auto">
                   <li class="nav-item active"><a class="nav-link text-light" href="/">Access control</a></li>
-                  <li class="nav-item"><a class="nav-link text-light" href="macs">MAC addresses</a></li>
-                  <li class="nav-item"><a class="nav-link text-light" href="#">Payments</a></li>
-                  <li class="nav-item"><a class="nav-link text-light" href="log_viewer">Machine Log Viewer</a></li>
-                  <li class="nav-item active"><a class="nav-link text-light" href="/log_view_2">Log viewer 2</a></li>
+                  <li class="nav-item active"><a class="nav-link text-light" href="/log_view">Log viewer</a></li>
+                  <li class="nav-item active"><a class="nav-link text-light" href="/full_log_view">Full work log viewer</a></li>
+                  <li class="nav-item active"><a class="nav-link text-light" href="/devices">Devices</a></li>
               </ul>
           </div>
   </nav>
@@ -40,10 +38,6 @@
         $(document).ready(function(){
             $('#tblData').dataTable({
                 paging: false,
-                columnDefs: [
-                    { targets: [0], visible: false, searchable: false },
-                    { targets: [5], searchable: false, orderable: false }
-                ]
             });
         });
     </script>

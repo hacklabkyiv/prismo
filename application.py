@@ -1,60 +1,56 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
-"""
-Core of Hacklab Admin Panel
-
-@author: Artem Synytsyn
-"""
-
-from flask import Flask, render_template, request, abort
-import time
-import json
-import yaml
-import sys
-import os
 import logging
+import threading
+import time
+from datetime import datetime
 from logging.handlers import RotatingFileHandler
-from collections import namedtuple
-from threading import Thread
 from os.path import getmtime
-import datetime
-import psycopg2 as psycopg
-import requests
-import txt_log_reader
-try:
-    from yaml import CLoader as Loader, CDumper
-except ImportError:
-    from yaml import Loader
 
-# Configuration file
-CONFIG_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.cfg')
+from flask import Flask, render_template, request
 
-# Initial setup
-try:
-    cfg = yaml.load(open(CONFIG_FILE, 'r'), Loader=Loader)
-except IOError as e:
-    logger.error("Config file not found!")
-    logger.error("Exception: %s" % str(e))
-    sys.exit(1)
+from app.config import cfg
+from app.data.device_repository import get_full_device, get_all_devices
+from app.data.log_repository import get_logs
+from app.data.permissions_repository import grant_permission, reject_permission, get_user_with_permission_to_device
+from app.data.user_repository import delete_user, add_user, get_full_user
+from app.data.work_logs_repository import start_work, finish_work, get_full_logs
+from app.limits.limit_checker import check_devices_limits
+from app.slack.slack_sender import send_user_enter
+from users_view_model import get_access_control_panel
 
 LATEST_KEY_FILE = cfg['data']['latest-key-file']
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 logger = logging.getLogger(__name__)
+
+
+def my_check():
+    print(check_devices_limits())
+
+
+def foo_target():
+    while True:
+        my_check()
+        time.sleep(10)
+
+
+t = threading.Thread(target=foo_target)
+t.daemon = True
+t.start()
+
 if cfg['logging']['debug'] is True:
     app.config['DEBUG'] = True
     logging.basicConfig(level=logging.DEBUG)
     # Create logger to be able to use rolling logs
     logger.setLevel(logging.DEBUG)
-    log_handler = RotatingFileHandler(cfg['logging']['logfile'],mode='a',
-                                      maxBytes=int(cfg['logging']['logsize_kb'])*1024,
+    log_handler = RotatingFileHandler(cfg['logging']['logfile'], mode='a',
+                                      maxBytes=int(cfg['logging']['logsize_kb']) * 1024,
                                       backupCount=int(cfg['logging']['rolldepth']),
                                       delay=0)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     log_handler.setFormatter(formatter)
     logger.addHandler(log_handler)
+
 
 def get_latest_key_info():
     try:
@@ -66,105 +62,92 @@ def get_latest_key_info():
     try:
         mod_time = getmtime(LATEST_KEY_FILE)
         mod_time_converted = datetime.datetime.fromtimestamp(
-                mod_time).strftime('%Y-%m-%d %H:%M:%S')
+            mod_time).strftime('%Y-%m-%d %H:%M:%S')
     except OSError:
         mod_time_converted = '<unknown>'
-    return ("%s updated at: %s" % (key_value, mod_time_converted))
+    return "%s updated at: %s" % (key_value, mod_time_converted)
 
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/user', methods=['POST'])
+def add_user_route():
+    user_name = request.form['nick']
+    user_key = request.form['key']
+    add_user(user_name, user_key)
+    return 'OK'
+
+
+@app.route('/user', methods=['DELETE'])
+def delete_user_route():
+    user_key = request.form['user_key']
+    delete_user(user_key)
+    return 'OK'
+
+
+@app.route('/permission', methods=['POST'])
+def grant_permission_route():
+    user_key = request.form['user_key']
+    permission = request.form['device_id']
+    grant_permission(user_key, permission)
+    return 'OK'
+
+
+@app.route('/permission', methods=['DELETE'])
+def reject_permission_route():
+    user_key = request.form['user_key']
+    permission = request.form['device_id']
+    reject_permission(user_key, permission)
+    return 'OK'
+
+
+@app.route('/', methods=['GET'])
 def index():
-    try:
-        conn = psycopg.connect(user = cfg['data']['user'],
-                                  password = cfg['data']['password'],
-                                  host = cfg['data']['host'],
-                                  port = cfg['data']['port'],
-                                  database = cfg['data']['name'])
-    except (Exception, psycopg.DatabaseError) as error :
-        logger.error("Error while connecting to PostgreSQL: %s" % error)
-        abort(500)
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM users')
-    all_column_names = list(description[0] for description in
-                          cursor.description)
+    access_control_panel = get_access_control_panel()
+    logger.info('Access control panel data: %s' % access_control_panel)
 
-    # Get column names for devices, needed access control. Exclude the others
-    access_info_columns = list(filter(lambda value: not value in ['id', 'name', 'key', 'last_enter'], all_column_names))
-    ordered_column_names = ['id', 'name', 'key', 'last_enter']
-    ordered_column_names.extend(access_info_columns)                   
-    
-    cursor.execute('SELECT id, name, key, last_enter FROM users')
-    user_info = cursor.fetchall()
-    cursor.execute('SELECT %s FROM users'
-                        % ','.join(access_info_columns))
-    user_access_info = cursor.fetchall()
-    template_data = zip(user_info, user_access_info)
-
-    # Updating latest key information
-    latest_key_info = get_latest_key_info()
-    # Parsing data from frontend: editing access, user additioin and deletion
-    if request.method == 'POST':
-        operation = request.form['operation']
-        if operation == 'edit':
-            user_id = request.form['id']
-            user_device = request.form['device']
-            user_state = request.form['state']
-            if user_state == 'true':
-                user_state = '1'
-            elif user_state == 'false':
-                user_state = '0'
-
-            logger.info('Updated user info: %s, %s, %s' % (user_id,
-                         access_info_columns[int(user_device)],
-                         user_state))
-            command = "UPDATE users SET %s = '%s' WHERE id = %s" \
-                % (access_info_columns[int(user_device)], user_state,
-                   user_id)
-            cursor.execute(command)
-            conn.commit()
-        elif operation == 'delete':
-            user_id = request.form['id']
-            user_device = request.form['device']
-            user_state = request.form['state']
-            cursor.execute('DELETE FROM users WHERE id=%s', (user_id, ))
-            conn.commit()
-            logger.info('User deleted, id: %s' % user_id)
-        elif operation == 'add':
-            user_name = request.form['nick']
-            user_key = request.form['key']
-            cursor.execute('INSERT INTO users(name, key) VALUES(%s, %s)',(user_name, user_key))
-            conn.commit()
-            logger.info('User added: %s, %s' % (user_name, user_key))
-    cursor.close()
-    conn.close()
-    return render_template('index.html', data=template_data,
-                           column_names=ordered_column_names,
-                           latest_key_info=latest_key_info)
-
-@app.route("/log_viewer")
-def log_reader_wrapper():
-    return txt_log_reader.render_logs_to_html()
+    return render_template('index.html', access_control_panel=access_control_panel,
+                           latest_key_info=get_latest_key_info())
 
 
-@app.route('/log_view_2')
-def log_view_2():
-    try:
-        conn = psycopg.connect(user=cfg['data']['user'],
-                               password=cfg['data']['password'],
-                               host=cfg['data']['host'],
-                               port=cfg['data']['port'],
-                               database=cfg['data']['name'])
-    except (Exception, psycopg.DatabaseError) as error:
-        logger.error("Error while connecting to PostgreSQL: %s" % error)
-        abort(500)
-    cursor = conn.cursor()
+@app.route('/device/user_with_access/<device_id>', methods=['GET'])
+def users_with_access_to_device(device_id):
+    return get_user_with_permission_to_device(device_id)
 
-    cursor.execute('select device_name, name, to_timestamp(time) from logs join users u on logs.key = u.key;')
 
-    logs = cursor.fetchall()
+@app.route('/device/start_work/<user_key>/<device_id>', methods=['POST'])
+def start_work_router(user_key, device_id):
+    if device_id == 'door':
+        send_user_enter(user_key)
 
-    print(logs)
+    start_work(user_key, device_id)
+    return 'OK'
 
-    cursor.close()
-    conn.close()
-    return render_template('log_view_2.html', logs=logs)
+
+@app.route('/device/stop_work/<user_key>/<device_id>', methods=['POST'])
+def finish_work_router(user_key, device_id):
+    finish_work(user_key, device_id)
+    return 'OK'
+
+
+@app.route('/log_view')
+def log_view():
+    return render_template('log_view.html', logs=get_logs())
+
+
+@app.route('/full_log_view')
+def full_log_view():
+    return render_template('full_log_view.html', logs=get_full_logs())
+
+
+@app.route('/devices')
+def devices():
+    return render_template('devices.html', devices=get_all_devices())
+
+
+@app.route('/user/<user_key>', methods=['GET'])
+def user_page(user_key):
+    return render_template("user_page.html", full_user=get_full_user(user_key))
+
+
+@app.route("/device/<device_id>", methods=["GET"])
+def device_page(device_id):
+    return render_template("device_page.html", full_device=get_full_device(device_id))
