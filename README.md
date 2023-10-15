@@ -10,19 +10,6 @@ The goal of this web tool is provide basic management capabilities for hackerspa
 3. Payments monitoring
 4. Internal information storage(wiki based)
 
-## Prepare database
-
-Install docker on your system.
-
-1. Pull PostgresSQL docker image
-
-   ```bash
-   $ docker pull postgres
-   ```
-
-2. Add user to group docker, user this instructions https://docs.docker.com/install/linux/linux-postinstall/. This will
-   allow to use docker without sudo. TODO: update step for MacOS users
-
 #### Optional steps
 
 By default, this should be run by Prismo admin process, but for debugging purpose you should run this commands by
