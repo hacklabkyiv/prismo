@@ -7,7 +7,7 @@ from app.config import cfg
 from app.data.device_repository import get_full_device, get_all_devices, add_device
 from app.data.permissions_repository import grant_permission, reject_permission, get_user_with_permission_to_device
 from app.data.user_repository import delete_user, add_user, get_full_user
-from app.data.work_logs_repository import start_work, finish_work, get_full_logs
+from app.data.work_logs_repository import start_work, finish_work, get_full_logs, get_latest_key
 from app.slack.slack_sender import send_user_enter
 from users_view_model import get_access_control_panel
 
@@ -70,9 +70,11 @@ def reject_permission_route():
 @app.route('/', methods=['GET'])
 def index():
     access_control_panel = get_access_control_panel()
+    latest_key = get_latest_key()
     logger.info('Access control panel data: %s' % access_control_panel)
+    logger.info('Latest key: %s' % latest_key)
 
-    return render_template('index.html', access_control_panel=access_control_panel)
+    return render_template("index.html", latest_key=latest_key, access_control_panel=access_control_panel)
 
 
 @app.route('/device/user_with_access/<device_id>', methods=['GET'])

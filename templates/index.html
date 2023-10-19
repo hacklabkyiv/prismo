@@ -4,12 +4,12 @@
     <h1 class="my-4">Access control</h1>
     <div class="well well-sm pb-4" data-step="1"
          data-intro="Latest used key on DOOR is shown here. Put new key to door reader and check modify datetime">Latest
-        triggered door key: {{ latest_key_info }}
+        triggered door key: {{ latest_key }}
     </div>
     <div class="row">
         <div class="form-group col-md-5 col-sm-12" data-step="2" data-intro="Add this new key here.">
             <label for="email">KEY Value: </label>
-            <input type="text" class="form-control" id="user_key" placeholder="123ABC">
+            <input type="text" class="form-control" id="user_key" value={{ latest_key }}>
         </div>
         <div class="form-group col-md-5 col-sm-12" data-step="3" data-intro="Fill the nickname">
             <label for="pwd">Nickname: </label>
