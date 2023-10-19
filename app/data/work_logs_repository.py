@@ -17,8 +17,13 @@ def finish_work(user_key, device_id):
     connection = get_db_connection()
 
     connection.cursor().execute(
-        "UPDATE work_logs SET end_time = strftime('%s', 'now') WHERE user_key = ? AND device_id = ?",
-        (user_key, device_id),
+        "UPDATE work_logs "
+        "SET end_time = strftime('%s', 'now')"
+        "WHERE user_key = ? AND device_id = ? "
+        "AND start_time = (SELECT MAX(start_time) " # Update only latest one,
+        "FROM work_logs "                           # Based on start_time value
+        "WHERE user_key = ? AND device_id = ?)",
+        (user_key, device_id, user_key, device_id),
     )
 
     connection.commit()
