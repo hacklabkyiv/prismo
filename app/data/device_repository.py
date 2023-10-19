@@ -85,3 +85,10 @@ def get_full_device(device_id) -> FullDevice:
     logging.info("full device: %s" % full_device)
 
     return full_device
+
+def add_device(device_id, device_name):
+    connection = get_db_connection()
+    connection.execute("INSERT INTO devices(id, name) VALUES(?,?)", (device_id, device_name))
+    logging.info('Device added: %s, %s' % (device_id, device_name))
+    connection.commit()
+    connection.close()

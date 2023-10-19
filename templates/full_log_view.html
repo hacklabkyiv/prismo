@@ -8,13 +8,15 @@
         <table class="table stripe hover align-middle dataTable no-footer compact pt-3">
             <tr>
                 <th>User Name</th>
+                <th>User Key</th>
                 <th>Device name</th>
                 <th>Start time</th>
                 <th>End time</th>
             </tr>
             {% for log in logs %}
             <tr>
-                <td><a href="/user/{{ log.user.key }}">{{ log.user.name }}</a></td>
+                <td><a href="/user/{{ log.user_key }}">{{ log.user_name }}</a></td>
+                <td>{{ log.user_key }}</td>
                 <td>{{ log.device_name }}</td>
                 <td>{{ log.start_time }}</td>
                 <td>{{ log.end_time }}</td>

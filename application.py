@@ -4,7 +4,7 @@ from logging.handlers import RotatingFileHandler
 from flask import Flask, render_template, request
 
 from app.config import cfg
-from app.data.device_repository import get_full_device, get_all_devices
+from app.data.device_repository import get_full_device, get_all_devices, add_device
 from app.data.permissions_repository import grant_permission, reject_permission, get_user_with_permission_to_device
 from app.data.user_repository import delete_user, add_user, get_full_user
 from app.data.work_logs_repository import start_work, finish_work, get_full_logs
@@ -43,6 +43,13 @@ def delete_user_route():
     delete_user(user_key)
     return 'OK'
 
+
+@app.route('/device', methods=['POST'])
+def add_device_route():
+    device_id = request.form['device_id']
+    device_name = request.form['device_name']
+    add_device(device_id, device_name)
+    return 'OK'
 
 @app.route('/permission', methods=['POST'])
 def grant_permission_route():

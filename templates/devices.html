@@ -3,6 +3,21 @@
 {% block content %}
 
 <div class="container-fluid px-md-5">
+    <div class="row">
+        <div class="form-group col-md-5 col-sm-12" data-step="2" data-intro="Add this new key here.">
+            <label for="email">Device name: </label>
+            <input type="text" class="form-control" id="device_id" placeholder="c32d8b45-92fe-44f6-8b61-42c2107dfe87">
+        </div>
+        <div class="form-group col-md-5 col-sm-12" data-step="3" data-intro="Fill the nickname">
+            <label for="pwd">Reader Name: </label>
+            <input type="text" class="form-control" id="device_name" placeholder="Device name, eg Lathe or Door">
+        </div>
+        <div class="col-md-2 col-sm-10 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary" onclick="addDevice()" data-step="4"
+                    data-intro="Finish addition">Add device
+            </button>
+        </div>
+    </div>
     <h1 class="my-4">All devices</h1>
     <div class="py-3">
         <div style="float:left; width: 30%">
