@@ -3,3 +3,4 @@ pyyaml~=6.0
 psycopg2-binary
 requests
 slack-notifications
+Werkzeug==2.3.0

@@ -79,6 +79,11 @@ create table work_logs
     start_time integer,
     end_time   integer
 );
+CREATE TABLE admins (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL,
+    password TEXT NOT NULL
+);
 ````
 
 ## Installation
@@ -145,12 +150,14 @@ script for this:
 This config should be placed as `prismo.conf` into `/etc/supervisor/conf.d/`
 The application doesn't create any table in database, so you should create it manually. See section "Prepare database"
 
-Configuration
-=============
+## Configuration
 
 Currently, config is stored in YAML file. Example of config:
 
 ```
+app:
+    secret_key: some_secret_key
+    slat: some_salt
 logging:
     debug: Yes
     logfile: log.txt
@@ -161,6 +168,21 @@ slack:
 ```
 
 path to config file is set in `applicaiton.py`. By default, config file name is `config.cfg`
+
+## Add admin user
+
+The admin credentials are stored in the database. The admin passwords store in hashed value.
+
+```bash
+INSERT INTO admins (username, password) VALUES ('admin', '<hashed admin password>');
+```
+
+To generate hashed password, you can use `hash_password.py` script.
+
+- Modify the salt in `hash_password.py` to match the salt in your `config.cfg`
+- Modify the password in `hash_password.py` to match the password you want to hash
+
+The script will print the hashed password to the console. Copy this value and insert it into the database.
 
 ## Logging
 
