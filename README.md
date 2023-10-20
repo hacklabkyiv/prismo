@@ -10,14 +10,144 @@ The goal of this web tool is provide basic management capabilities for hackerspa
 3. Payments monitoring
 4. Internal information storage(wiki based)
 
-#### Optional steps
+## Installation
+
+### Preconditions
+
+- Python 3.6+ with pip
+- git
+- supervisor(optional)
+
+### Step-by-step installation
+
+1. Clone the repository:
+
+    ```sh
+    git clone git@github.com:hacklabkyiv/prismo.git
+    ```
+   or by https:
+    ```sh
+    git clone https://github.com/hacklabkyiv/prismo.git
+    ```
+
+2. Install virtualenv in project's directory:
+
+    ```sh
+    $ python3 -m venv ./virtualenv
+    ```
+
+3. Activate virtual environment
+
+    ```
+    source ./virtualenv/bin/activate
+    ```
+
+4. Install required packages:
+
+    ```sh
+    pip3 install -r requirements.txt
+    ```
+
+5. Run app:
+
+   ```sh
+   export FLASK_APP=application.py && flask run
+   ```
+
+#### Supper visitor setup
+
+Install supervisor
+
+  ```
+  sudo apt install supervisor
+  ```
+
+Server autostart using `supervisor`
+
+Supervisor is handy tool for autostart different scripts in userspace(supervisord.org). Here is example of configuration
+script for this:
+
+  ```
+  [program:prismo]
+  command=/home/prismo/prismo/.venv/bin/python /home/prismo/prismo/.venv/bin/gunicorn --bind 0.0.0.0:8000 application:app
+  directory=/home/prismo/prismo
+  startsecs=5
+  autostart=true
+  autorestart=true
+  redirect_stderr=true
+  stderr_logfile=/var/log/prismo/prismo.err.log
+  stdout_logfile=/var/log/prismo/prismo.out.log  
+  ```
+
+#### Nginx setup
+
+After installation of nginx(`sudo apt install nginx`) edit config `sudo vim /etc/nginx/conf.d/virtual.conf`
+
+  ```
+  server {
+      listen       80;
+      server_name  prismo.local;
+  
+      location / {
+          proxy_pass http://127.0.0.1:8000;
+      }
+  }
+  ```
+
+This config should be placed as `prismo.conf` into `/etc/supervisor/conf.d/`
+The application doesn't create any table in database, so you should create it manually. See section "Prepare database"
+
+### Configuration
+
+Config file name is `config.cfg`, the file located in the root directory of the project. Configs stored in YAML format.
+
+```
+app:
+    secret_key: some_secret_key
+    slat: some_salt
+logging:
+    debug: Yes
+    logfile: log.txt
+    logsize_kb: 1000
+    rolldepth: 3
+slack:
+    token: <slack_token>
+```
+
+The secret key and slat must be the different values. The secret key is used for session encryption, the salt is used
+for admin password hashing. We strongly recommend to generate random values for both of them.
+
+### Add admin user
+
+The admin credentials are stored in the database. The admin passwords store in hashed value.
+
+```bash
+INSERT INTO admins (username, password) VALUES ('admin', '<hashed admin password>');
+```
+
+To generate hashed password, you can use `hash_password.py` script.
+
+- Modify the salt in `hash_password.py` to match the salt in your `config.cfg`
+- Modify the password in `hash_password.py` to match the password you want to hash
+
+The script will print the hashed password to the console. Copy this value and insert it into the database.
+
+## Development
+
+Run for debugging and development: (it will reload app on code changes and enable debug mode)
+
+```sh
+export FLASK_APP=application.py
+flask run --debug
+```
 
 By default, this should be run by Prismo admin process, but for debugging purpose you should run this commands by
 yourself.
 
-##### Database
+#### Database
 
-We use the sqlite database, the file for database is stored in `database.db` file.
+We use the sqlite database, the file for database is stored in `database.db` file. The file is not created by default.
+You need to create it manually. See section "Prepare database"
 
 Schema of database:
 
@@ -45,13 +175,19 @@ classDiagram
         integer end_time
     }
 
+    class admins {
+        integer id
+        text username
+        text password
+    }
+
     permissions --> devices
     work_logs --> devices
     work_logs --> users
     permissions --> users
 ```
 
-Create database schema:
+#### Prepare database
 
 ```bash
 create table devices
@@ -79,117 +215,13 @@ create table work_logs
     start_time integer,
     end_time   integer
 );
+
 CREATE TABLE admins (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL,
     password TEXT NOT NULL
 );
 ````
-
-## Installation
-
-1. Install virtualenv in project's directory:
-   ```sh
-   $ python3 -m venv ./virtualenv
-   ```
-
-2. Activate virtual environment
-
-   ```
-   source ./virtualenv/bin/activate
-   ```
-
-3. Install required packages:
-
-  ```sh
-  pip3 install -r requirements.txt
-  ```
-
-4. Run app:
-
-   ```sh
-   export FLASK_APP=application.py 
-   flask run
-   ```
-   4.1 Run for debugging and development: (it will reload app on code changes and enable debug mode)
-   ```sh
-   export FLASK_APP=application.py 
-   flask run --debug
-    ```
-5. Server autostart using `supervisor`
-
-Supervisor is handy tool for autostart different scripts in userspace(supervisord.org). Here is example of configuration
-script for this:
-
-  ```
-  [program:prismo]
-  command=/home/prismo/prismo/.venv/bin/python /home/prismo/prismo/.venv/bin/gunicorn --bind 0.0.0.0:8000 application:app
-  directory=/home/prismo/prismo
-  startsecs=5
-  autostart=true
-  autorestart=true
-  redirect_stderr=true
-  stderr_logfile=/var/log/prismo/prismo.err.log
-  stdout_logfile=/var/log/prismo/prismo.out.log  
-  ```
-
-6. Nginx setup
-   After installation of nginx(`sudo apt install nginx`) edit config `sudo vim /etc/nginx/conf.d/virtual.conf`
-
-  ```
-  server {
-      listen       80;
-      server_name  prismo.local;
-  
-      location / {
-          proxy_pass http://127.0.0.1:8000;
-      }
-  }
-  ```
-
-This config should be placed as `prismo.conf` into `/etc/supervisor/conf.d/`
-The application doesn't create any table in database, so you should create it manually. See section "Prepare database"
-
-## Configuration
-
-Currently, config is stored in YAML file. Example of config:
-
-```
-app:
-    secret_key: some_secret_key
-    slat: some_salt
-logging:
-    debug: Yes
-    logfile: log.txt
-    logsize_kb: 1000
-    rolldepth: 3
-slack:
-    token: <slack_token>
-```
-
-The secret key and slat must be the different values. The secret key is used for session encryption, the salt is used
-for admin password hashing. We strongly recommend to generate random values for both of them.
-
-Config file name is `config.cfg`, the file located in the root directory of the project.
-
-## Add admin user
-
-The admin credentials are stored in the database. The admin passwords store in hashed value.
-
-```bash
-INSERT INTO admins (username, password) VALUES ('admin', '<hashed admin password>');
-```
-
-To generate hashed password, you can use `hash_password.py` script.
-
-- Modify the salt in `hash_password.py` to match the salt in your `config.cfg`
-- Modify the password in `hash_password.py` to match the password you want to hash
-
-The script will print the hashed password to the console. Copy this value and insert it into the database.
-
-## Logging
-
-All logs are stored in `log.txt` file.
 
 ### Project data structure
 
@@ -202,7 +234,11 @@ All data stored in postgres database. Currently, we have three tables:
 - logs - the table with logs. It contains three columns: timestamp, device_id, user_key. Timestamp is timestamp of
   event, device_id is unique id of device, user_key is key of user, who has access to this device.
 
-## API
+### Logging
+
+All logs are stored in `log.txt` file.
+
+## API for readers
 
 #### Get all users with access to device
 
