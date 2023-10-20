@@ -5,10 +5,11 @@ import flask
 import flask_login
 from flask import Flask, render_template, request
 from flask_login import LoginManager
+from flask_sock import Sock
 
 from app.config import cfg
-from app.data.admins_repository import get_admin_user_by_user_name, get_admin_user_by_id, \
-    get_admin_user_by_flask_user, get_flask_admin_user_by_id, get_flask_admin_user_by_user_name, \
+from app.data.admins_repository import get_admin_user_by_flask_user, get_flask_admin_user_by_id, \
+    get_flask_admin_user_by_user_name, \
     get_flask_admin_user_by_credentials
 from app.data.device_repository import get_full_device, get_all_devices, add_device
 from app.data.permissions_repository import grant_permission, reject_permission, \
@@ -16,10 +17,12 @@ from app.data.permissions_repository import grant_permission, reject_permission,
 from app.data.user_repository import delete_user, add_user, get_full_user
 from app.data.work_logs_repository import start_work, finish_work, get_full_logs, get_latest_key
 from app.slack.slack_sender import send_user_enter
+from app.utils.fimware_updater import update_firmware_full
 from users_view_model import get_access_control_panel
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = cfg['app']['secret_key']
+websocket = Sock(app)
 logger = logging.getLogger(__name__)
 
 login_manager = LoginManager()
@@ -169,3 +172,8 @@ def user_page(user_key):
 @app.route("/device/<device_id>", methods=["GET"])
 def device_page(device_id):
     return render_template("device_page.html", full_device=get_full_device(device_id))
+
+
+@websocket.route('/updater_socket')
+def updater(websocket):
+    update_firmware_full(websocket)

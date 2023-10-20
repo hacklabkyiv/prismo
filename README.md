@@ -167,7 +167,10 @@ slack:
     token: <slack_token>
 ```
 
-path to config file is set in `applicaiton.py`. By default, config file name is `config.cfg`
+The secret key and slat must be the different values. The secret key is used for session encryption, the salt is used
+for admin password hashing. We strongly recommend to generate random values for both of them.
+
+Config file name is `config.cfg`, the file located in the root directory of the project.
 
 ## Add admin user
 
