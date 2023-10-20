@@ -2,6 +2,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 
 from flask import Flask, render_template, request
+from flask_sock import Sock
 
 from app.config import cfg
 from app.data.device_repository import get_full_device, get_all_devices, add_device
@@ -10,8 +11,10 @@ from app.data.user_repository import delete_user, add_user, get_full_user
 from app.data.work_logs_repository import start_work, finish_work, get_full_logs, get_latest_key
 from app.slack.slack_sender import send_user_enter
 from users_view_model import get_access_control_panel
+from app.utils.fimware_updater import update_firmware_full
 
 app = Flask(__name__)
+websocket = Sock(app)
 app.config['SECRET_KEY'] = 'secret!'
 logger = logging.getLogger(__name__)
 
@@ -115,3 +118,10 @@ def user_page(user_key):
 @app.route("/device/<device_id>", methods=["GET"])
 def device_page(device_id):
     return render_template("device_page.html", full_device=get_full_device(device_id))
+
+"""
+Prototype for firmware_update feature
+"""
+@websocket.route('/updater_socket')
+def updater(websocket):
+    update_firmware_full(websocket)
