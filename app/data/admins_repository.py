@@ -86,7 +86,7 @@ def get_admin_user_by_id(user_id: str) -> AdminUser | None:
     return user
 
 
-def get_admin_user_by_user_name(user_name: str) -> AdminUser:
+def get_admin_user_by_user_name(user_name: str) -> AdminUser | None:
     connection = get_db_connection()
     rows = connection.execute(
         "SELECT id, username, password FROM admins WHERE username=?", (user_name,)
