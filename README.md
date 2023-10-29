@@ -121,9 +121,15 @@ for admin password hashing. We strongly recommend to generate random values for 
 
 After installation and start the application, visit application web page. You wil redirected to create admin user page.
 Fill the form and click "Create admin user" button. After that, you will be redirected to login page. Use your
-credentials to login. 
+credentials to login.
 
 The application redirect you to admin create page only in case if there is no admin users in database.
+
+### Add admin user manually
+
+You can also add more admin users manually. To do this, you need to insert new record into `admins` table in database.
+Our system can work with several admins. But it is not fully supported features, we don't have admin management page,
+logs for admin actions, etc. In case when you add several admins, you take responsibility and risks.
 
 ```bash
 INSERT INTO admins (username, password) VALUES ('admin', '<hashed admin password>');
