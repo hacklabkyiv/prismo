@@ -37,17 +37,23 @@ def finish_work(device_id):
     connection.close()
 
 
-def get_latest_key():
+def get_latest_key() -> str | None:
     """
     Get last triggered key, to add new users by clicking on any reader
     """
     connection = get_db_connection()
-    latest_key = (
+    rows = (
         connection.cursor()
         .execute("SELECT user_key FROM work_logs ORDER BY start_time LIMIT 1")
         .fetchone()
-    )[0]
-    return latest_key
+    )
+
+    connection.close()
+
+    if rows is None:
+        return None
+    else:
+        return rows[0]
 
 
 def get_full_logs():

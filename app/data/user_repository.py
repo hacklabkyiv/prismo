@@ -43,7 +43,7 @@ class UserDevices:
         self.device_id = device_id
 
 
-def get_user(user_key: str) -> UserDto:
+def get_user(user_key: str) -> UserDto | None:
     connection = get_db_connection()
     rows = connection.execute(
         "SELECT key, name FROM users WHERE key=?", (user_key,)

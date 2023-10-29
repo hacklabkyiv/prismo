@@ -5,3 +5,4 @@ requests
 slack-notifications
 Werkzeug==2.3.7
 flask-sock
+flask-login

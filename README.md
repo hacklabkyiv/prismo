@@ -119,7 +119,11 @@ for admin password hashing. We strongly recommend to generate random values for 
 
 ### Add admin user
 
-The admin credentials are stored in the database. The admin passwords store in hashed value.
+After installation and start the application, visit application web page. You wil redirected to create admin user page.
+Fill the form and click "Create admin user" button. After that, you will be redirected to login page. Use your
+credentials to login. 
+
+The application redirect you to admin create page only in case if there is no admin users in database.
 
 ```bash
 INSERT INTO admins (username, password) VALUES ('admin', '<hashed admin password>');

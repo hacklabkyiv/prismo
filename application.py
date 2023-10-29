@@ -10,9 +10,9 @@ from flask_sock import Sock
 from app.config import cfg
 from app.data.admins_repository import get_admin_user_by_flask_user, get_flask_admin_user_by_id, \
     get_flask_admin_user_by_user_name, \
-    get_flask_admin_user_by_credentials
+    get_flask_admin_user_by_credentials, is_any_admin_user_exists, add_new_admin
 from app.data.device_repository import get_full_device, get_all_devices, add_device
-from app.data.user_repository import delete_user, add_user, get_full_user
+from app.data.user_repository import get_full_user
 from app.data.work_logs_repository import get_full_logs, get_latest_key
 from app.routers.permission_routers import permissions_blue_print
 from app.routers.reader_routers import reader_blue_print
@@ -64,28 +64,31 @@ def login():
     password = flask.request.form['password']
     flask_admin_user = get_flask_admin_user_by_credentials(username, password)
 
+    print("Admin user: %s" % flask_admin_user)
+
     if flask_admin_user is None:
-        return 'Bad login'
+        return "Bad login"
     else:
         flask_login.login_user(flask_admin_user)
-        return flask.redirect(flask.url_for('index'))
+        return flask.redirect(flask.url_for('access_panel'))
 
 
-@app.route('/user', methods=['POST'])
-@flask_login.login_required
-def add_user_route():
-    user_name = request.form['nick']
-    user_key = request.form['key']
-    add_user(user_name, user_key)
-    return 'OK'
+@app.route('/add_new_admin', methods=['GET', 'POST'])
+def add_new_admin_router():
+    if flask.request.method == 'GET':
+        return render_template('add_new_admin.html')
+
+    username = flask.request.form['username']
+    password = flask.request.form['password']
+    add_new_admin(username, password)
+
+    return flask.redirect(flask.url_for('login'))
 
 
-@app.route('/user', methods=['DELETE'])
-@flask_login.login_required
-def delete_user_route():
-    user_key = request.form['user_key']
-    delete_user(user_key)
-    return 'OK'
+@app.route('/logout')
+def logout():
+    flask_login.logout_user()
+    return flask.redirect(flask.url_for('login'))
 
 
 @app.route('/device', methods=['POST'])
@@ -99,6 +102,16 @@ def add_device_route():
 
 @app.route('/', methods=['GET'])
 def index():
+    if not is_any_admin_user_exists():
+        return flask.redirect(flask.url_for('add_new_admin_router'))
+    if flask_login.current_user.is_authenticated:
+        return flask.redirect(flask.url_for('access_panel'))
+    else:
+        return flask.redirect(flask.url_for('login'))
+
+
+@app.route('/access_panel', methods=['GET'])
+def access_panel():
     access_control_panel = get_access_control_panel()
     latest_key = get_latest_key()
 
@@ -111,11 +124,10 @@ def index():
     logger.info('Access control panel data: %s' % access_control_panel)
     logger.info('Latest key: %s' % latest_key)
 
-    return render_template("index.html",
+    return render_template("access_panel.html",
                            latest_key=latest_key,
                            access_control_panel=access_control_panel,
-                           current_user=current_username
-                           )
+                           current_user=current_username)
 
 
 @app.route('/full_log_view')
