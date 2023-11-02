@@ -169,3 +169,11 @@ POST: `/device/start_work/<device_id>/<user_key>`
 #### User stop work with device
 
 POST: `/device/stop_work/<device_id>/<user_key>`
+
+## Slack
+
+Slack integration works with slack bot. You need to create slack bot in your slack workspace and get token for it.
+Scope:
+
+- file:write
+- 

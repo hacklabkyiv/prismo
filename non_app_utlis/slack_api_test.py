@@ -1,13 +1,13 @@
-import os
+from slack_sdk import WebClient
 
-import slack_notifications as slack
-import yaml
-from yaml import Loader
-
-CONFIG_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../config.cfg')
-cfg = yaml.load(open(CONFIG_FILE, 'r'), Loader=Loader)
+client = WebClient(token='xoxb-156594252659-6059712941424-4SnYb71awW0Mo0iV7Y9bm4Jb')
 
 if __name__ == '__main__':
-    slack = slack.Slack(token=cfg['slack']['token'])
+    response = client.files_upload_v2(
+        channel="C8Z6P3QRF",
+        file="../database.db",
+        title="Database backup",
+        initial_comment="Here is the latest version of the database.",
+    )
 
-    print(cfg['slack']['token'])
+    print(response)

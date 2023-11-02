@@ -27,20 +27,19 @@ database_file = Path("database.db")
 UPLOAD_FOLDER = '/uploads'
 
 internal_config_file = Path("internal_config.json")
-_slat_key = 'slat'
+slat_key = 'slat'
+slack_token_key = 'slack_token'
+slack_backup_channel_key = 'slack_channel_id'
 
 
-def get_slat():
+def get_setting(key: str):
     with open(internal_config_file, 'r') as config_file:
         config = json.load(config_file)
-        return config[_slat_key]
+        config_file.close()
+        return config.get(key, None)
 
 
-def set_slat(slat):
-    _update_config_field(_slat_key, slat)
-
-
-def _update_config_field(key: str, value: str):
+def set_setting(key: str, value: str):
     if not internal_config_file.is_file():
         with open(internal_config_file, 'w') as config_file:
             json.dump({}, config_file, indent=4)

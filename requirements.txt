@@ -6,3 +6,4 @@ slack_sdk
 Werkzeug==2.3.7
 flask-sock
 flask-login
+schedule

@@ -1,27 +1,33 @@
 import logging
+import secrets
+import threading
+import time
 from logging.handlers import RotatingFileHandler
 
 import flask
 import flask_login
+import schedule
 from flask import Flask, render_template, request
 from flask_login import LoginManager
 from flask_sock import Sock
 
+from app.backup_database import backup_data_base
 from app.config import cfg, UPLOAD_FOLDER
 from app.data.admins_repository import get_admin_user_by_flask_user, get_flask_admin_user_by_id, \
-    get_flask_admin_user_by_user_name, \
-    get_flask_admin_user_by_credentials
+    get_flask_admin_user_by_user_name
 from app.data.device_repository import get_full_device, get_all_devices, add_device
 from app.data.work_logs_repository import get_full_logs, get_latest_key
-from app.init_app import database_file, init_app
+from app.init_app import database_file
+from app.routers.admin_routrers import admin_blue_print
 from app.routers.permission_routers import permissions_blue_print
 from app.routers.reader_routers import reader_blue_print
+from app.routers.settings_routers import settings_blue_print
 from app.routers.user_routers import user_blue_print
 from app.utils.fimware_updater import update_firmware_full
 from users_view_model import get_access_control_panel
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = cfg['app']['secret_key']
+app.config['SECRET_KEY'] = secrets.token_hex(32)
 websocket = Sock(app)
 logger = logging.getLogger(__name__)
 
@@ -46,6 +52,21 @@ if cfg['logging']['debug'] is True:
 app.register_blueprint(reader_blue_print)
 app.register_blueprint(permissions_blue_print)
 app.register_blueprint(user_blue_print)
+app.register_blueprint(admin_blue_print)
+app.register_blueprint(settings_blue_print)
+
+
+def scheduler_thread():
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+
+
+schedule.every().day.at("22:17").do(backup_data_base)
+
+scheduler = threading.Thread(target=scheduler_thread)
+scheduler.daemon = True
+scheduler.start()
 
 
 # noinspection PyBroadException
@@ -76,49 +97,7 @@ def index():
     if flask_login.current_user.is_authenticated:
         return flask.redirect(flask.url_for('access_panel'))
     else:
-        return flask.redirect(flask.url_for('login'))
-
-
-@app.route('/init_app', methods=['GET', 'POST'])
-def init_app_route():
-    if flask.request.method == 'GET':
-        return render_template('init_app.html')
-
-    username = flask.request.form['username']
-    password = flask.request.form['password']
-    slat = flask.request.form['slat']
-    if 'file' in flask.request.files:
-        file = request.files['file']
-    else:
-        file = None
-
-    init_app(username, password, slat, file)
-
-    return flask.redirect(flask.url_for('login'))
-
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if flask.request.method == 'GET':
-        return render_template('login.html')
-
-    username = flask.request.form['username']
-    password = flask.request.form['password']
-    flask_admin_user = get_flask_admin_user_by_credentials(username, password)
-
-    print("Admin user: %s" % flask_admin_user)
-
-    if flask_admin_user is None:
-        return "Bad login"
-    else:
-        flask_login.login_user(flask_admin_user)
-        return flask.redirect(flask.url_for('access_panel'))
-
-
-@app.route('/logout')
-def logout():
-    flask_login.logout_user()
-    return flask.redirect(flask.url_for('login'))
+        return flask.redirect(flask.url_for('admin.login'))
 
 
 @app.route('/device', methods=['POST'])

@@ -92,12 +92,3 @@ def get_admin_user_by_user_name(user_name: str) -> AdminUser | None:
     user = AdminUser(admin_id, username, password)
     connection.close()
     return user
-
-
-def is_any_admin_user_exists() -> bool:
-    connection = get_db_connection()
-    rows = connection.execute(
-        "SELECT id FROM admins"
-    ).fetchall()
-
-    return len(rows) > 0

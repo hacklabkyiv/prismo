@@ -3,7 +3,7 @@ import sqlite3
 
 from werkzeug.utils import secure_filename
 
-from app.config import database_file, internal_config_file, set_slat
+from app.config import database_file, internal_config_file, slat_key, set_setting
 from app.utils.password import hash_password
 
 _database_connection = None
@@ -17,7 +17,7 @@ def init_app(admin_username: str, admin_password: str, slat: str, file):
     if is_app_inited():
         raise Exception("App already initialized")
 
-    set_slat(slat)
+    set_setting(slat_key, slat)
 
     if (file is not None) and (not file.filename == ''):
         init_database_from_backup(admin_username, admin_password, file)
