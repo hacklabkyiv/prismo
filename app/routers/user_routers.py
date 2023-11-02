@@ -1,10 +1,10 @@
 import flask_login
 from flask import (
-    Blueprint
+    Blueprint, render_template
 )
 from flask import request
 
-from app.data.user_repository import delete_user, add_user
+from app.data.user_repository import delete_user, add_user, get_full_user
 
 user_blue_print = Blueprint('users', __name__, url_prefix='/user')
 
@@ -24,3 +24,8 @@ def delete_user_route():
     user_key = request.form['user_key']
     delete_user(user_key)
     return 'OK'
+
+
+@user_blue_print.route('/<user_key>', methods=['GET'])
+def user_page(user_key):
+    return render_template("user_page.html", full_user=get_full_user(user_key))

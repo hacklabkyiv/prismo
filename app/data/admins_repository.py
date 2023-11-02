@@ -3,7 +3,7 @@ import hashlib
 import flask_login
 
 from app.config import cfg
-from app.data.database_driver import get_db_connection
+from app.data.database import get_db_connection
 
 salt = cfg['app']['slat']
 
@@ -108,18 +108,3 @@ def is_any_admin_user_exists() -> bool:
     ).fetchall()
 
     return len(rows) > 0
-
-
-def add_new_admin(username: str, password: str):
-    if is_any_admin_user_exists():
-        raise Exception("Admin user already exists")
-
-    final_slat = salt + str(len(password))
-    hashed_pass = hashlib.sha256((password + final_slat).encode('utf-8')).hexdigest()
-
-    connection = get_db_connection()
-    connection.execute(
-        "INSERT INTO admins (username, password) VALUES (?, ?)", (username, hashed_pass)
-    )
-    connection.commit()
-    connection.close()

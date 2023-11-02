@@ -6,16 +6,19 @@ import flask_login
 from flask import Flask, render_template, request
 from flask_login import LoginManager
 from flask_sock import Sock
+from werkzeug.utils import secure_filename
 
-from app.config import cfg
+from app.config import cfg, UPLOAD_FOLDER
 from app.data.admins_repository import get_admin_user_by_flask_user, get_flask_admin_user_by_id, \
     get_flask_admin_user_by_user_name, \
-    get_flask_admin_user_by_credentials, is_any_admin_user_exists, add_new_admin
+    get_flask_admin_user_by_credentials
+from app.data.database import database_path, init_app_database
 from app.data.device_repository import get_full_device, get_all_devices, add_device
 from app.data.user_repository import get_full_user
 from app.data.work_logs_repository import get_full_logs, get_latest_key
 from app.routers.permission_routers import permissions_blue_print
 from app.routers.reader_routers import reader_blue_print
+from app.routers.user_routers import user_blue_print
 from app.utils.fimware_updater import update_firmware_full
 from users_view_model import get_access_control_panel
 
@@ -23,6 +26,8 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = cfg['app']['secret_key']
 websocket = Sock(app)
 logger = logging.getLogger(__name__)
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -42,17 +47,57 @@ if cfg['logging']['debug'] is True:
 
 app.register_blueprint(reader_blue_print)
 app.register_blueprint(permissions_blue_print)
+app.register_blueprint(user_blue_print)
 
 
+# noinspection PyBroadException
 @login_manager.user_loader
 def loader_user(user_id):
-    return get_flask_admin_user_by_id(user_id)
+    try:
+        return get_flask_admin_user_by_id(user_id)
+    except Exception:
+        return None
 
 
+# noinspection PyBroadException
 @login_manager.request_loader
 def request_loader(request):
     username = request.form.get('username')
-    return get_flask_admin_user_by_user_name(username)
+    try:
+        print("user name: %s" % username)
+        return get_flask_admin_user_by_user_name(username)
+    except Exception:
+        print("none: %s" % username)
+        return None
+
+
+@app.route('/', methods=['GET'])
+def index():
+    if not database_path.is_file():
+        return flask.redirect(flask.url_for('init_app'))
+    if flask_login.current_user.is_authenticated:
+        return flask.redirect(flask.url_for('access_panel'))
+    else:
+        return flask.redirect(flask.url_for('login'))
+
+
+@app.route('/init_app', methods=['GET', 'POST'])
+def init_app():
+    if flask.request.method == 'GET':
+        return render_template('init_app.html')
+
+    username = flask.request.form['username']
+    password = flask.request.form['password']
+    if 'file' in flask.request.files:
+        file = request.files['file']
+    else:
+        file = None
+
+    print("Init app with username: %s, password: %s, file: %s" % (username, password, file))
+
+    init_app_database(username, password, file)
+
+    return flask.redirect(flask.url_for('login'))
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -73,18 +118,6 @@ def login():
         return flask.redirect(flask.url_for('access_panel'))
 
 
-@app.route('/add_new_admin', methods=['GET', 'POST'])
-def add_new_admin_router():
-    if flask.request.method == 'GET':
-        return render_template('add_new_admin.html')
-
-    username = flask.request.form['username']
-    password = flask.request.form['password']
-    add_new_admin(username, password)
-
-    return flask.redirect(flask.url_for('login'))
-
-
 @app.route('/logout')
 def logout():
     flask_login.logout_user()
@@ -98,16 +131,6 @@ def add_device_route():
     device_name = request.form['device_name']
     add_device(device_id, device_name)
     return 'OK'
-
-
-@app.route('/', methods=['GET'])
-def index():
-    if not is_any_admin_user_exists():
-        return flask.redirect(flask.url_for('add_new_admin_router'))
-    if flask_login.current_user.is_authenticated:
-        return flask.redirect(flask.url_for('access_panel'))
-    else:
-        return flask.redirect(flask.url_for('login'))
 
 
 @app.route('/access_panel', methods=['GET'])
@@ -138,11 +161,6 @@ def full_log_view():
 @app.route('/devices')
 def devices():
     return render_template('devices.html', devices=get_all_devices())
-
-
-@app.route('/user/<user_key>', methods=['GET'])
-def user_page(user_key):
-    return render_template("user_page.html", full_user=get_full_user(user_key))
 
 
 @app.route("/device/<device_id>", methods=["GET"])

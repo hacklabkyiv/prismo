@@ -3,12 +3,8 @@
 PRISMO Admin Panel
 ===================
 
-The goal of this web tool is provide basic management capabilities for hackerspaces, like:
-
-1. Presence management basing on MAC address monitoring
-2. RFID access system management
-3. Payments monitoring
-4. Internal information storage(wiki based)
+The goal of this web tool is provide one of the basic capabilities for hackerspaces, manage and monitor access to the
+space and equipment.
 
 ## Installation
 
@@ -154,95 +150,9 @@ flask run --debug
 By default, this should be run by Prismo admin process, but for debugging purpose you should run this commands by
 yourself.
 
-#### Database
+## Database
 
-We use the sqlite database, the file for database is stored in `database.db` file. The file is not created by default.
-You need to create it manually. See section "Prepare database"
-
-Schema of database:
-
-```mermaid
-classDiagram
-    direction BT
-    class devices {
-        text id
-        text name
-    }
-    class permissions {
-        text device_id
-        text user_key
-    }
-
-    class users {
-        text name
-        text key
-    }
-
-    class work_logs {
-        text user_key
-        text device_id
-        integer start_time
-        integer end_time
-    }
-
-    class admins {
-        integer id
-        text username
-        text password
-    }
-
-    permissions --> devices
-    work_logs --> devices
-    work_logs --> users
-    permissions --> users
-```
-
-#### Prepare database
-
-```bash
-create table devices
-(
-    id   text not null,
-    name text not null
-);
-
-create table permissions
-(
-    device_id text not null,
-    user_key  text not null
-);
-
-create table users
-(
-    name text,
-    key  text
-);
-
-create table work_logs
-(
-    user_key   text not null,
-    device_id  text not null,
-    start_time integer,
-    end_time   integer
-);
-
-CREATE TABLE admins (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL,
-    password TEXT NOT NULL
-);
-````
-
-### Project data structure
-
-All data stored in postgres database. Currently, we have three tables:
-
-- users - the table with users data. It contains three columns: name, key, last_enter. Name is user's name, key is
-  unique key (getting from rfid), last_enter is timestamp of last enter to hackerspace.
-- permissions - the table with permissions. It contains two columns: device_id and user_key. Device_id is unique id of
-  device, user_key is key of user, who has access to this device.
-- logs - the table with logs. It contains three columns: timestamp, device_id, user_key. Timestamp is timestamp of
-  event, device_id is unique id of device, user_key is key of user, who has access to this device.
+All information about the database is stored in `docs/database.md` file.
 
 ### Logging
 

@@ -19,3 +19,5 @@ except IOError as e:
     logging.error("Config file not found!")
     logging.error("Exception: %s" % str(e))
     sys.exit(1)
+
+UPLOAD_FOLDER = '/uploads'

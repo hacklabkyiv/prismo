@@ -1,4 +1,4 @@
-from app.data.database_driver import get_db_connection
+from app.data.database import get_db_connection
 
 
 def start_work(user_key, device_id) -> bool:
