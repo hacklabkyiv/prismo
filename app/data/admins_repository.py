@@ -1,11 +1,7 @@
-import hashlib
-
 import flask_login
 
-from app.config import cfg
-from app.data.database import get_db_connection
-
-salt = cfg['app']['slat']
+from app.init_app import get_db_connection
+from app.utils.password import hash_password
 
 
 class FlaskAdminUser(flask_login.UserMixin):
@@ -32,11 +28,8 @@ def get_flask_admin_user_by_credentials(username: str, password: str) -> FlaskAd
     if len(rows) == 0:
         return None
 
-    final_slat = salt + str(len(password))
-    hashed_pass = hashlib.sha256((password + final_slat).encode('utf-8')).hexdigest()
-
     db_admin_id, db_password = rows[0]
-    if db_password == hashed_pass:
+    if db_password == hash_password(password):
         user = FlaskAdminUser()
         user.id = db_admin_id
         connection.close()

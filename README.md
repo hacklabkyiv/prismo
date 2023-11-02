@@ -100,7 +100,6 @@ Config file name is `config.cfg`, the file located in the root directory of the 
 ```
 app:
     secret_key: some_secret_key
-    slat: some_salt
 logging:
     debug: Yes
     logfile: log.txt
@@ -110,8 +109,7 @@ slack:
     token: <slack_token>
 ```
 
-The secret key and slat must be the different values. The secret key is used for session encryption, the salt is used
-for admin password hashing. We strongly recommend to generate random values for both of them.
+The secret key is used for session encryption. We strongly recommend to generate random values for the secret key.
 
 ### Add admin user
 

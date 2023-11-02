@@ -1,5 +1,6 @@
 # Project-specific files
 config.cfg
+internal_config.json
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

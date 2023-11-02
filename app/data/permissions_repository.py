@@ -2,7 +2,7 @@ import logging
 from dataclasses import dataclass
 from typing import List
 
-from app.data.database import get_db_connection
+from app.init_app import get_db_connection
 
 
 @dataclass

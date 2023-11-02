@@ -6,16 +6,14 @@ import flask_login
 from flask import Flask, render_template, request
 from flask_login import LoginManager
 from flask_sock import Sock
-from werkzeug.utils import secure_filename
 
 from app.config import cfg, UPLOAD_FOLDER
 from app.data.admins_repository import get_admin_user_by_flask_user, get_flask_admin_user_by_id, \
     get_flask_admin_user_by_user_name, \
     get_flask_admin_user_by_credentials
-from app.data.database import database_path, init_app_database
 from app.data.device_repository import get_full_device, get_all_devices, add_device
-from app.data.user_repository import get_full_user
 from app.data.work_logs_repository import get_full_logs, get_latest_key
+from app.init_app import database_file, init_app
 from app.routers.permission_routers import permissions_blue_print
 from app.routers.reader_routers import reader_blue_print
 from app.routers.user_routers import user_blue_print
@@ -73,8 +71,8 @@ def request_loader(request):
 
 @app.route('/', methods=['GET'])
 def index():
-    if not database_path.is_file():
-        return flask.redirect(flask.url_for('init_app'))
+    if not database_file.is_file():
+        return flask.redirect(flask.url_for('init_app_route'))
     if flask_login.current_user.is_authenticated:
         return flask.redirect(flask.url_for('access_panel'))
     else:
@@ -82,20 +80,19 @@ def index():
 
 
 @app.route('/init_app', methods=['GET', 'POST'])
-def init_app():
+def init_app_route():
     if flask.request.method == 'GET':
         return render_template('init_app.html')
 
     username = flask.request.form['username']
     password = flask.request.form['password']
+    slat = flask.request.form['slat']
     if 'file' in flask.request.files:
         file = request.files['file']
     else:
         file = None
 
-    print("Init app with username: %s, password: %s, file: %s" % (username, password, file))
-
-    init_app_database(username, password, file)
+    init_app(username, password, slat, file)
 
     return flask.redirect(flask.url_for('login'))
 

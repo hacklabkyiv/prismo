@@ -1,32 +1,24 @@
-import hashlib
 import os
 import sqlite3
-from pathlib import Path
 
 from werkzeug.utils import secure_filename
 
-from app.config import cfg
-
-database_path = Path("database.db")
-
-password_slat = cfg['app']['slat']
+from app.config import database_file, internal_config_file, set_slat
+from app.utils.password import hash_password
 
 _database_connection = None
 
 
 def is_app_inited():
-    return database_path.is_file()
+    return database_file.is_file() and internal_config_file.is_file()
 
 
-def hash_password(password: str):
-    final_slat = password_slat + str(len(password))
-    hashed_pass = hashlib.sha256((password + final_slat).encode('utf-8')).hexdigest()
-    return hashed_pass
-
-
-def init_app_database(admin_username: str, admin_password: str, file):
+def init_app(admin_username: str, admin_password: str, slat: str, file):
     if is_app_inited():
-        raise Exception("Database already exists")
+        raise Exception("App already initialized")
+
+    set_slat(slat)
+
     if (file is not None) and (not file.filename == ''):
         init_database_from_backup(admin_username, admin_password, file)
     else:
@@ -40,7 +32,7 @@ def init_database_from_backup(admin_username: str, admin_password: str, file):
     filename = secure_filename(file.filename)
     if not filename.endswith(".db"):
         raise Exception("Invalid file extension")
-    file.save(database_path)
+    file.save(database_file)
 
     verify_is_secrets_from_backup(admin_password, admin_username)
 
@@ -52,12 +44,12 @@ def verify_is_secrets_from_backup(admin_password, admin_username):
         (admin_username, hash_password(admin_password))
     ).fetchone()
     if (rows is None) or (len(rows) == 0):
-        os.remove(database_path)
+        os.remove(database_file)
         raise Exception("Invalid admin credentials")
 
 
 def init_database(admin_username: str, admin_password: str):
-    sqlite3.connect(database_path)
+    sqlite3.connect(database_file)
     connection = get_db_connection()
     connection.executescript("""
     CREATE TABLE admins(
@@ -101,6 +93,6 @@ def init_database(admin_username: str, admin_password: str):
 def get_db_connection():
     if not is_app_inited():
         return None
-    _database_connection = sqlite3.connect(database_path)
+    _database_connection = sqlite3.connect(database_file)
     _database_connection.row_factory = sqlite3.Row
     return _database_connection
