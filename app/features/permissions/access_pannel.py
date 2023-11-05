@@ -2,12 +2,12 @@ from dataclasses import dataclass
 from typing import List
 
 from app.data.device_repository import get_all_devices
-from app.data.permissions_repository import get_user_permissions
-from app.data.user_dto import UserDto
+from app.data.dtos import UserDto
 from app.data.user_repository import get_all_users
+from app.features.permissions.permissions_repository import get_user_permissions
 
 
-@dataclass()
+@dataclass
 class PermissionUiModel:
     isGranted: bool
     device_key: str

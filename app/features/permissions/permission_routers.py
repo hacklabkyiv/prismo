@@ -1,7 +1,7 @@
 import flask_login
 from flask import Blueprint, request
 
-from app.data.permissions_repository import grant_permission, reject_permission
+from app.features.permissions.permissions_repository import grant_permission, reject_permission
 
 permissions_blue_print = Blueprint('permission', __name__, url_prefix='/permission')
 

@@ -4,7 +4,7 @@ import sqlite3
 from werkzeug.utils import secure_filename
 
 from app.config import database_file, internal_config_file, slat_key, set_setting
-from app.utils.password import hash_password
+from app.features.admin.password import hash_password
 
 _database_connection = None
 
@@ -73,11 +73,11 @@ def init_database(admin_username: str, admin_password: str):
         user_key  TEXT NOT NULL
     );
     
-    CREATE TABLE work_logs(
-        user_key   TEXT NOT NULL,
+    CREATE TABLE event_logs(
         device_id  TEXT NOT NULL,
-        start_time INTEGER,
-        end_time   INTEGER
+        user_key   TEXT,
+        operation_type TEXT NOT NULL,
+        operation_time       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
     """)
     connection.commit()
@@ -93,6 +93,10 @@ def init_database(admin_username: str, admin_password: str):
 def get_db_connection():
     if not is_app_inited():
         return None
-    _database_connection = sqlite3.connect(database_file)
-    _database_connection.row_factory = sqlite3.Row
+
+    global _database_connection
+
+    if not _database_connection:
+        _database_connection = sqlite3.connect(database_file, check_same_thread=False)
+        _database_connection.row_factory = sqlite3.Row
     return _database_connection

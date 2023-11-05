@@ -1,6 +1,5 @@
 Flask~=2.3.2
 pyyaml~=6.0
-psycopg2-binary
 requests
 slack_sdk
 Werkzeug==2.3.7

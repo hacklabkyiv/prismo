@@ -2,8 +2,8 @@ import flask
 import flask_login
 from flask import Blueprint, render_template, request
 
-from app.data.admins_repository import get_flask_admin_user_by_credentials
-from app.init_app import init_app
+from app.features.admin.admins_repository import get_flask_admin_user_by_credentials
+from app.features.admin.init_app import init_app
 
 admin_blue_print = Blueprint('admin', __name__)
 
@@ -23,7 +23,7 @@ def init_app_route():
 
     init_app(username, password, slat, file)
 
-    return flask.redirect(flask.url_for('login'))
+    return flask.redirect(flask.url_for('admin.login'))
 
 
 @admin_blue_print.route('/login', methods=['GET', 'POST'])
@@ -45,4 +45,4 @@ def login():
 @admin_blue_print.route('/logout')
 def logout():
     flask_login.logout_user()
-    return flask.redirect(flask.url_for('login'))
+    return flask.redirect(flask.url_for('admin.login'))

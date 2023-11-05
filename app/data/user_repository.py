@@ -3,28 +3,16 @@ import string
 from dataclasses import dataclass
 from typing import List
 
-from app.init_app import get_db_connection
-from app.data.time_convert import convert_time_to_human
-from app.data.user_dto import UserDto
-
-
-@dataclass
-class UserWorkLog:
-    device_name: str
-    start_time: str
-    end_time: str
-
-    def __init__(self, device_name, start_time, end_time):
-        self.device_name = device_name
-        self.start_time = start_time
-        self.end_time = end_time
+from app.data.device_dto import DeviceDto
+from app.data.dtos import UserDto
+from app.features.admin.init_app import get_db_connection
 
 
 @dataclass
 class FullUser:
     user_key: string
     user_name: string
-    logs: List[UserWorkLog]
+    logs: []
     devices: List[str]
 
     def __init__(self, user_key, user_name, logs, devices):
@@ -54,7 +42,6 @@ def get_user(user_key: str) -> UserDto | None:
 
     user_key, user_name = rows[0]
     user = UserDto(user_key, user_name)
-    connection.close()
     return user
 
 
@@ -80,20 +67,26 @@ def get_full_user(user_key):
         user_devices.append(UserDevices(device_name, device_id))
 
     rows = connection.execute(
-        "SELECT d.name, start_time, end_time FROM work_logs "
-        "JOIN devices d ON work_logs.device_id = d.id "
-        "WHERE work_logs.user_key=? ORDER BY start_time DESC", (user_key,)
+        "select d.id, d.name, operation_type, operation_time from event_logs "
+        "join devices d on d.id = event_logs.device_id "
+        "WHERE event_logs.user_key=? "
+        "ORDER BY operation_time DESC", (user_key,)
     ).fetchall()
 
     user_logs = []
     for row in rows:
-        device, start_time, end_time = row
-        human_start_time = convert_time_to_human(start_time)
-        human_end_time = convert_time_to_human(end_time)
-        user_logs.append(UserWorkLog(device, human_start_time, human_end_time))
+        device_id, device_name, operation_type, operation_time = row
+        device = DeviceDto(device_id, device_name)
+
+        log = {
+            "device": device,
+            "operation_type": operation_type,
+            "operation_time": operation_time
+        }
+
+        user_logs.append(log)
 
     full_user = FullUser(user_key, user_name, user_logs, user_devices)
-    connection.close()
     return full_user
 
 
@@ -101,7 +94,6 @@ def delete_user(user_key):
     connection = get_db_connection()
     connection.execute("DELETE FROM users WHERE key=?", (user_key,))
     connection.commit()
-    connection.close()
     logging.info('User with id %s was deleted' % (user_key,))
 
 
@@ -110,7 +102,6 @@ def add_user(user_name, user_key):
     connection.execute("INSERT INTO users(name, key) VALUES(?,?)", (user_name, user_key))
     logging.info('User added: %s, %s' % (user_name, user_key))
     connection.commit()
-    connection.close()
 
 
 def get_all_users() -> list[UserDto]:
@@ -124,7 +115,5 @@ def get_all_users() -> list[UserDto]:
         key, name = row
         user = UserDto(key, name)
         users.append(user)
-
-    connection.close()
 
     return users

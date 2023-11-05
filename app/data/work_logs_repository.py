@@ -1,40 +1,6 @@
-from app.init_app import get_db_connection
-
-
-def start_work(user_key, device_id) -> bool:
-    connection = get_db_connection()
-
-    is_device_in_use: bool = connection.cursor().execute(
-        "SELECT count(*) FROM work_logs WHERE device_id = ? AND end_time IS NULL", (device_id,)
-    ).fetchall()[0] == 0
-
-    if not is_device_in_use:
-        connection.cursor().execute(
-            "INSERT INTO work_logs (user_key, device_id, start_time) "
-            "VALUES (?, ?, strftime('%s', 'now'))",
-            (user_key, device_id),
-        )
-        connection.commit()
-
-    connection.close()
-    return not is_device_in_use
-
-
-def finish_work(device_id):
-    connection = get_db_connection()
-
-    connection.cursor().execute(
-        "UPDATE work_logs "
-        "SET end_time = strftime('%s', 'now')"
-        "WHERE device_id = ? "
-        "AND start_time = (SELECT MAX(start_time) "  # Update only latest one,
-        "FROM work_logs "  # Based on start_time value
-        "WHERE device_id = ?)",
-        (device_id, device_id),
-    )
-
-    connection.commit()
-    connection.close()
+from app.data.device_dto import DeviceDto
+from app.data.dtos import UserDto, OperationDto
+from app.features.admin.init_app import get_db_connection
 
 
 def get_latest_key() -> str | None:
@@ -44,11 +10,13 @@ def get_latest_key() -> str | None:
     connection = get_db_connection()
     rows = (
         connection.cursor()
-        .execute("SELECT user_key FROM work_logs ORDER BY start_time LIMIT 1")
+        .execute("""
+        SELECT user_key 
+        FROM event_logs 
+        WHERE user_key IS NOT NULL 
+        ORDER BY operation_time LIMIT 1""")
         .fetchone()
     )
-
-    connection.close()
 
     if rows is None:
         return None
@@ -64,24 +32,23 @@ def get_full_logs():
     rows = (
         connection.cursor()
         .execute(
-            "SELECT COALESCE(u.name, 'Unknown') AS user_name, "
-            "w.user_key, w.device_id, datetime(w.start_time, 'unixepoch'), datetime(w.end_time, 'unixepoch') "
-            "FROM work_logs AS w "
-            "LEFT JOIN users AS u ON w.user_key = u.key;"
+            "SELECT u.name, u.key, d.name, d.id, operation_type, operation_time FROM event_logs "
+            "JOIN users u ON event_logs.user_key = u.key "
+            "JOIN devices d ON d.id = event_logs.device_id "
         )
         .fetchall()
     )
     work_log = []
-    for user_name, user_key, device_name, start_time, end_time in rows:
+    for user_name, user_key, device_name, device_id, operation_type, operation_time in rows:
+        user = UserDto(user_name, user_key)
+        device = DeviceDto(device_name, device_id)
+        operation = OperationDto(operation_type, operation_time)
+
         log_entry = {
-            "user_name": user_name,
-            "user_key": user_key,
-            "device_name": device_name,
-            "start_time": start_time,
-            "end_time": end_time,
+            "user": user,
+            "device": device,
+            "operation": operation,
         }
         work_log.append(log_entry)
-
-    connection.close()
 
     return work_log

@@ -28,8 +28,8 @@ UPLOAD_FOLDER = '/uploads'
 
 internal_config_file = Path("internal_config.json")
 slat_key = 'slat'
-slack_token_key = 'slack_token'
-slack_backup_channel_key = 'slack_channel_id'
+key_slack_token = 'key_slack_token'
+key_slack_backup_channel = 'key_slack_backup_channel'
 
 
 def get_setting(key: str):

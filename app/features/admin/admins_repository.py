@@ -1,7 +1,7 @@
 import flask_login
 
-from app.init_app import get_db_connection
-from app.utils.password import hash_password
+from app.features.admin.init_app import get_db_connection
+from app.features.admin.password import hash_password
 
 
 class FlaskAdminUser(flask_login.UserMixin):
@@ -32,7 +32,6 @@ def get_flask_admin_user_by_credentials(username: str, password: str) -> FlaskAd
     if db_password == hash_password(password):
         user = FlaskAdminUser()
         user.id = db_admin_id
-        connection.close()
         return user
     else:
         return None
@@ -75,7 +74,6 @@ def get_admin_user_by_id(user_id: str) -> AdminUser | None:
 
     admin_id, username, password = rows[0]
     user = AdminUser(admin_id, username, password)
-    connection.close()
     return user
 
 
@@ -90,5 +88,4 @@ def get_admin_user_by_user_name(user_name: str) -> AdminUser | None:
 
     admin_id, username, password = rows[0]
     user = AdminUser(admin_id, username, password)
-    connection.close()
     return user

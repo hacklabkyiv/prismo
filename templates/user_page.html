@@ -17,14 +17,14 @@
                 <table class="table stripe hover align-middle dataTable no-footer compact pt-3">
                     <tr>
                         <th>Device name</th>
-                        <th>Start time</th>
-                        <th>End time</th>
+                        <th>Operation type</th>
+                        <th>Time</th>
                     </tr>
                     {% for log in full_user.logs %}
                     <tr>
-                        <td>{{ log.device_name }}</td>
-                        <td>{{ log.start_time }}</td>
-                        <td>{{ log.end_time }}</td>
+                        <td><a href="/device/{{ log.device.id }}">{{ log.device.name }}</a></td>
+                        <td>{{ log.operation_type }}</td>
+                        <td>{{ log.operation_time }}</td>
                     </tr>
                     {% endfor %}
                 </table>

@@ -2,7 +2,7 @@ import logging
 from dataclasses import dataclass
 from typing import List
 
-from app.init_app import get_db_connection
+from app.features.admin.init_app import get_db_connection
 
 
 @dataclass
@@ -26,7 +26,6 @@ def get_user_permissions(user_key) -> List[str]:
         key, = row
         user_permissions.append(key)
 
-    connection.close()
 
     logging.info('user with id %s, permissions: %s' % (user_key, user_permissions))
     return user_permissions
@@ -60,5 +59,4 @@ def reject_permission(user_key, device_id):
         "delete from permissions where user_key=? and device_id=?", (user_key, device_id)
     )
     connection.commit()
-    connection.close()
     logging.info('Reject permission for user with id %s to device %s' % (user_key, device_id))

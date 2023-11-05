@@ -1,5 +1,6 @@
 import datetime
 
+
 def convert_time_to_human(timestamp):
     if timestamp is None:
         return None

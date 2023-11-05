@@ -11,20 +11,20 @@ from flask import Flask, render_template, request
 from flask_login import LoginManager
 from flask_sock import Sock
 
+from app.features.admin.admin_routrers import admin_blue_print
+from app.features.admin.admins_repository import get_admin_user_by_flask_user, get_flask_admin_user_by_id, \
+    get_flask_admin_user_by_user_name
+from app.features.admin.init_app import database_file
 from app.backup_database import backup_data_base
 from app.config import cfg, UPLOAD_FOLDER
-from app.data.admins_repository import get_admin_user_by_flask_user, get_flask_admin_user_by_id, \
-    get_flask_admin_user_by_user_name
 from app.data.device_repository import get_full_device, get_all_devices, add_device
 from app.data.work_logs_repository import get_full_logs, get_latest_key
-from app.init_app import database_file
-from app.routers.admin_routrers import admin_blue_print
-from app.routers.permission_routers import permissions_blue_print
-from app.routers.reader_routers import reader_blue_print
+from app.features.permissions.access_pannel import get_access_control_panel
+from app.features.permissions.permission_routers import permissions_blue_print
+from app.features.readers.reader_routers import reader_blue_print
 from app.routers.settings_routers import settings_blue_print
 from app.routers.user_routers import user_blue_print
 from app.utils.fimware_updater import update_firmware_full
-from users_view_model import get_access_control_panel
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = secrets.token_hex(32)
@@ -93,7 +93,7 @@ def request_loader(request):
 @app.route('/', methods=['GET'])
 def index():
     if not database_file.is_file():
-        return flask.redirect(flask.url_for('init_app_route'))
+        return flask.redirect(flask.url_for('admin.init_app_route'))
     if flask_login.current_user.is_authenticated:
         return flask.redirect(flask.url_for('access_panel'))
     else:
