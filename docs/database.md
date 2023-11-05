@@ -1,42 +1,6 @@
 ## The database structure
 
-The application creates the database by itself, but you can create it manually by running this SQL commands:
-
-```bash
-CREATE TABLE admins (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL,
-    password TEXT NOT NULL
-);
-
-create table users
-(
-    name text,
-    key  text
-);
-
-create table devices
-(
-    id   text not null,
-    name text not null
-);
-
-create table permissions
-(
-    device_id text not null,
-    user_key  text not null
-);
-
-create table work_logs
-(
-    user_key   text not null,
-    device_id  text not null,
-    start_time integer,
-    end_time   integer
-);
-````
-
-The code for creating database is in `app/data/database.py` file.
+The application creates the database by itself. The code for creating database is in `app/data/database.py` file.
 
 ### Project data structure
 
@@ -58,36 +22,36 @@ Schema of database:
 
 ```mermaid
 classDiagram
-    direction BT
-    class devices {
-        text id
-        text name
-    }
-    class permissions {
-        text device_id
-        text user_key
-    }
+  direction BT
+  class devices {
+    text id
+    text name
+  }
+  class permissions {
+    text device_id
+    text user_key
+  }
 
-    class users {
-        text name
-        text key
-    }
+  class users {
+    text name
+    text key
+  }
 
-    class work_logs {
-        text user_key
-        text device_id
-        integer start_time
-        integer end_time
-    }
+  class event_long {
+    text user_key
+    text device_id
+    text operation
+    text time
+  }
 
-    class admins {
-        integer id
-        text username
-        text password
-    }
+  class admins {
+    integer id
+    text username
+    text password
+  }
 
-    permissions --> devices
-    work_logs --> devices
-    work_logs --> users
-    permissions --> users
+  permissions --> devices
+  work_logs --> devices
+  work_logs --> users
+  permissions --> users
 ```
