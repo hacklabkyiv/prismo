@@ -1,0 +1,13 @@
+GET http://localhost:5000/reader/name1/accesses
+
+
+###
+POST http://127.0.0.1:5000/reader/name1/log_operation
+Content-Type: application/json
+
+{
+  "operation": "unlock",
+  "data": {
+    "key": "key1"
+  }
+}

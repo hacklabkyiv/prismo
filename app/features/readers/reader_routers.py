@@ -17,12 +17,26 @@ def accesses(device_id):
 
 @reader_blue_print.route('/<device_id>/log_operation', methods=['POST'])
 def log_operation(device_id):
-    user_key = request.args['user_key']
-    operation = request.args['operation']
+    json = request.json
 
-    cursor = get_db_connection().cursor(
+    operation = json['operation']
+
+    if operation not in ['lock', 'unlock']:
+        raise Exception('Invalid operation')
+
+    data = json.get('data')
+    if data is None:
+        user_key = None
+    else:
+        user_key = data['key']
+
+    if (operation == 'unlock') and user_key is None:
+        raise Exception('Invalid operation')
+
+    connection = get_db_connection()
+    connection.execute(
         "INSERT INTO event_logs(device_id, user_key, operation_type) VALUES (?, ?, ?)",
         (device_id, user_key, operation)
     )
-    cursor.execute()
+    connection.commit()
     return 'OK', 201

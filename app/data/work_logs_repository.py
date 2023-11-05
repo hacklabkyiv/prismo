@@ -33,16 +33,19 @@ def get_full_logs():
         connection.cursor()
         .execute(
             "SELECT u.name, u.key, d.name, d.id, operation_type, operation_time FROM event_logs "
-            "JOIN users u ON event_logs.user_key = u.key "
+            "LEFT JOIN users u ON event_logs.user_key = u.key "
             "JOIN devices d ON d.id = event_logs.device_id "
+            "ORDER BY operation_time DESC"
         )
         .fetchall()
     )
+
     work_log = []
     for user_name, user_key, device_name, device_id, operation_type, operation_time in rows:
+        print(user_name, user_key, device_name, device_id, operation_type, operation_time)
         user = UserDto(user_name, user_key)
         device = DeviceDto(device_name, device_id)
-        operation = OperationDto(operation_type, operation_time)
+        operation = OperationDto(operation_time, operation_type)
 
         log_entry = {
             "user": user,

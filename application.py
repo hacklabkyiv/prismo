@@ -12,7 +12,8 @@ from flask_login import LoginManager
 from flask_sock import Sock
 
 from app.features.admin.admin_routrers import admin_blue_print
-from app.features.admin.admins_repository import get_admin_user_by_flask_user, get_flask_admin_user_by_id, \
+from app.features.admin.admins_repository import get_admin_user_by_flask_user, \
+    get_flask_admin_user_by_id, \
     get_flask_admin_user_by_user_name
 from app.features.admin.init_app import database_file
 from app.backup_database import backup_data_base
