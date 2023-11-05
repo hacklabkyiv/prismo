@@ -60,7 +60,8 @@ def init_database(admin_username: str, admin_password: str):
     
     CREATE TABLE users(
         name TEXT NOT NULL,
-        key  TEXT NOT NULL
+        key  TEXT NOT NULL,
+        slack_id TEXT DEFAULT NULL
     );
     
     CREATE TABLE devices(

@@ -3,7 +3,7 @@ from typing import List
 
 from app.data.device_repository import get_all_devices
 from app.data.dtos import UserDto
-from app.data.user_repository import get_all_users
+from app.features.users.user_repository import get_all_users
 from app.features.permissions.permissions_repository import get_user_permissions
 
 

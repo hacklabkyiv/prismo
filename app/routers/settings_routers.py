@@ -1,8 +1,8 @@
 import flask_login
 from flask import Blueprint, request, render_template
 
-from app.backup_database import backup_data_base
 from app.config import set_setting, key_slack_token, key_slack_backup_channel, get_setting
+from app.features.backup_database import backup_data_base
 
 settings_blue_print = Blueprint('settings', __name__)
 

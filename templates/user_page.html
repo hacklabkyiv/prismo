@@ -3,7 +3,17 @@
 {% block content %}
 
 <div class="container-fluid px-md-5">
-    <h1 class="my-4">Profile for user : {{ full_user.user_name }}</h1>
+    <h1 class="my-4">Profile for user : {{ full_user.user.name }}</h1>
+    <div>
+        <form method="post" action="#">
+            <label for="slack_id">Slack ID:</label>
+            <input type="text" id="slack_id" name="slack_id" required value={{ full_user.user.slack_id }}>
+
+            <input type="submit" value="Set user slack id">
+        </form>
+
+        <button id="execute-button">Send sent notification</button>
+    </div>
     <div class="py-3">
         <div style="width: 100%;">
             <div style="float:left; width: 30%">
@@ -23,8 +33,8 @@
                     {% for log in full_user.logs %}
                     <tr>
                         <td><a href="/device/{{ log.device.id }}">{{ log.device.name }}</a></td>
-                        <td>{{ log.operation_type }}</td>
-                        <td>{{ log.operation_time }}</td>
+                        <td>{{ log.operation.type }}</td>
+                        <td>{{ log.operation.time }}</td>
                     </tr>
                     {% endfor %}
                 </table>
@@ -34,4 +44,22 @@
     </div>
 
 </div>
+
+<script>
+    $(document).ready(function() {
+        let jsonData = {
+            user_key: "{{ full_user.user.key }}",
+        };
+        $('#execute-button').click(function() {
+            $.ajax({
+                type: 'POST',
+                url: 'send-test-message-to-user',
+                data: JSON.stringify(jsonData),
+                contentType: 'application/json',
+            });
+        });
+    });
+</script>
+
+
 {% endblock %}

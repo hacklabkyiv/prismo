@@ -41,11 +41,6 @@ def get_setting(key: str):
 
 
 def set_setting(key: str, value: str):
-    if not internal_config_file.is_file():
-        with open(internal_config_file, 'w') as config_file:
-            json.dump({}, config_file, indent=4)
-            config_file.close()
-
     with open(internal_config_file, 'r') as config_file:
         config = json.load(config_file)
         config_file.close()
@@ -55,3 +50,10 @@ def set_setting(key: str, value: str):
     with open(internal_config_file, 'w') as config_file:
         json.dump(config, config_file, indent=4)
         config_file.close()
+
+
+def create_internal_config_file():
+    if not internal_config_file.is_file():
+        with open(internal_config_file, 'w') as config_file:
+            json.dump({}, config_file, indent=4)
+            config_file.close()

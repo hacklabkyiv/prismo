@@ -11,8 +11,8 @@ from flask import Flask, render_template, request
 from flask_login import LoginManager
 from flask_sock import Sock
 
-from app.backup_database import backup_data_base
-from app.config import cfg, UPLOAD_FOLDER, get_setting, key_secret_key, set_setting
+from app.config import cfg, UPLOAD_FOLDER, get_setting, key_secret_key, set_setting, \
+    create_internal_config_file
 from app.data.device_repository import get_full_device, get_all_devices, add_device
 from app.data.work_logs_repository import get_full_logs, get_latest_key
 from app.features.admin.admin_routrers import admin_blue_print
@@ -20,14 +20,17 @@ from app.features.admin.admins_repository import get_admin_user_by_flask_user, \
     get_flask_admin_user_by_id, \
     get_flask_admin_user_by_user_name
 from app.features.admin.init_app import database_file
+from app.features.backup_database import backup_data_base
 from app.features.permissions.access_pannel import get_access_control_panel
 from app.features.permissions.permission_routers import permissions_blue_print
 from app.features.readers.reader_routers import reader_blue_print
 from app.routers.settings_routers import settings_blue_print
-from app.routers.user_routers import user_blue_print
+from app.features.users.user_routers import user_blue_print
 from app.utils.fimware_updater import update_firmware_full
 
 app = Flask(__name__)
+
+create_internal_config_file()
 
 secret_key = get_setting(key_secret_key)
 if (secret_key is None) or (secret_key == ""):

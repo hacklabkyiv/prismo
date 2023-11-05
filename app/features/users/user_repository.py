@@ -1,60 +1,20 @@
 import logging
-import string
-from dataclasses import dataclass
-from typing import List
 
 from app.data.device_dto import DeviceDto
-from app.data.dtos import UserDto
+from app.data.dtos import UserDto, OperationDto
 from app.features.admin.init_app import get_db_connection
-
-
-@dataclass
-class FullUser:
-    user_key: string
-    user_name: string
-    logs: []
-    devices: List[str]
-
-    def __init__(self, user_key, user_name, logs, devices):
-        self.user_key = user_key
-        self.user_name = user_name
-        self.logs = logs
-        self.devices = devices
-
-
-class UserDevices:
-    device_name: str
-    device_id: str
-
-    def __init__(self, device_name, device_id):
-        self.device_name = device_name
-        self.device_id = device_id
-
-
-def get_user(user_key: str) -> UserDto | None:
-    connection = get_db_connection()
-    rows = connection.execute(
-        "SELECT key, name FROM users WHERE key=?", (user_key,)
-    ).fetchall()
-
-    if len(rows) == 0:
-        return None
-
-    user_key, user_name = rows[0]
-    user = UserDto(user_key, user_name)
-    return user
 
 
 def get_full_user(user_key):
     connection = get_db_connection()
     row = connection.execute(
-        "SELECT key, name FROM users WHERE key=?", (user_key,)
+        "SELECT key, name, slack_id FROM users WHERE key=?", (user_key,)
     ).fetchall()
 
     if len(row) == 0:
         return None
 
-    user_key, user_name = row[0]
+    user_key, user_name, slack_id = row[0]
 
     rows = connection.execute(
         "SELECT d.id, d.name FROM permissions JOIN devices d ON d.id = permissions.device_id "
@@ -64,7 +24,7 @@ def get_full_user(user_key):
     user_devices = []
     for row in rows:
         device_id, device_name = row
-        user_devices.append(UserDevices(device_name, device_id))
+        user_devices.append(DeviceDto(device_name, device_id))
 
     rows = connection.execute(
         "select d.id, d.name, operation_type, operation_time from event_logs "
@@ -80,14 +40,20 @@ def get_full_user(user_key):
 
         log = {
             "device": device,
-            "operation_type": operation_type,
-            "operation_time": operation_time
+            "operation": OperationDto(operation_time, operation_type),
         }
 
         user_logs.append(log)
 
-    full_user = FullUser(user_key, user_name, user_logs, user_devices)
-    return full_user
+    return {
+        "user": {
+            "key": user_key,
+            "name": user_name,
+            "slack_id": slack_id
+        },
+        "logs": user_logs,
+        "devices": user_devices
+    }
 
 
 def delete_user(user_key):

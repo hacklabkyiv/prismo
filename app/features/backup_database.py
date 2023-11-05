@@ -1,3 +1,5 @@
+import logging
+
 from slack_sdk import WebClient
 
 from app.config import get_setting, key_slack_token, key_slack_backup_channel, database_file
@@ -19,4 +21,4 @@ def backup_data_base():
         initial_comment="Here is the latest version of the database.",
     )
 
-    print(response)
+    logging.info(response)
