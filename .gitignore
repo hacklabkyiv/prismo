@@ -154,3 +154,6 @@ out/
 .vscode/
 
 .fleet
+.DS_Store
+**/.DS_Store
+
