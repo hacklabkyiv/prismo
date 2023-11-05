@@ -43,8 +43,8 @@ def get_full_logs():
     work_log = []
     for user_name, user_key, device_name, device_id, operation_type, operation_time in rows:
         print(user_name, user_key, device_name, device_id, operation_type, operation_time)
-        user = UserDto(user_name, user_key)
-        device = DeviceDto(device_name, device_id)
+        user = UserDto(user_key, user_name)
+        device = DeviceDto(device_id, device_name)
         operation = OperationDto(operation_time, operation_type)
 
         log_entry = {
