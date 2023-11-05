@@ -30,6 +30,7 @@ internal_config_file = Path("internal_config.json")
 slat_key = 'slat'
 key_slack_token = 'key_slack_token'
 key_slack_backup_channel = 'key_slack_backup_channel'
+key_secret_key = 'key_secret_key'
 
 
 def get_setting(key: str):

@@ -17,7 +17,7 @@ from app.features.admin.admins_repository import get_admin_user_by_flask_user, \
     get_flask_admin_user_by_user_name
 from app.features.admin.init_app import database_file
 from app.backup_database import backup_data_base
-from app.config import cfg, UPLOAD_FOLDER
+from app.config import cfg, UPLOAD_FOLDER, get_setting, key_secret_key, set_setting
 from app.data.device_repository import get_full_device, get_all_devices, add_device
 from app.data.work_logs_repository import get_full_logs, get_latest_key
 from app.features.permissions.access_pannel import get_access_control_panel
@@ -28,7 +28,13 @@ from app.routers.user_routers import user_blue_print
 from app.utils.fimware_updater import update_firmware_full
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = secrets.token_hex(32)
+
+secret_key = get_setting(key_secret_key)
+if (secret_key is None) or (secret_key == ""):
+    secret_key = secrets.token_hex(32)
+    set_setting(key_secret_key, secret_key)
+
+app.config['SECRET_KEY'] = secret_key
 websocket = Sock(app)
 logger = logging.getLogger(__name__)
 
