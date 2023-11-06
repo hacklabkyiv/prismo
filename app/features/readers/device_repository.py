@@ -20,29 +20,15 @@ def get_all_devices() -> list[DeviceDto]:
     return devices
 
 
-@dataclass
-class FullDevice:
-    device_id: str
-    device_name: str
-    user_with_access: List[UserDto]
-    logs: []
-
-    def __init__(self, device_id, device_name, logs, user_with_access):
-        self.device_id = device_id
-        self.device_name = device_name
-        self.logs = logs
-        self.user_with_access = user_with_access
-
-
-def get_full_device(device_id) -> FullDevice | None:
+def get_full_device(device_id):
     connection = get_db_connection()
-    row = connection.cursor().execute("SELECT id, name FROM devices WHERE id=?",
+    row = connection.cursor().execute("SELECT id, name, slack_channel_id FROM devices WHERE id=?",
                                       (device_id,)).fetchall()
 
     if len(row) == 0:
         return None
 
-    device_id, device_name = row[0]
+    device_id, device_name, slack_channel_id = row[0]
 
     rows = connection.cursor().execute(
         "SELECT u.key, u.name, operation_type, operation_time "
@@ -71,11 +57,15 @@ def get_full_device(device_id) -> FullDevice | None:
         user_key, user_name = row
         user_with_access.append(UserDto(user_key, user_name))
 
-    full_device = FullDevice(device_id, device_name, logs, user_with_access)
-
-    logging.info("full device: %s" % full_device)
-
-    return full_device
+    return {
+        "device": {
+            "name": device_name,
+            "id": device_id,
+            "slack_channel_id": slack_channel_id,
+        },
+        "logs": logs,
+        "user_with_access": user_with_access,
+    }
 
 
 def add_device(device_id, device_name):

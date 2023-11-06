@@ -7,13 +7,12 @@ from logging.handlers import RotatingFileHandler
 import flask
 import flask_login
 import schedule
-from flask import Flask, render_template, request
+from flask import Flask, render_template
 from flask_login import LoginManager
 from flask_sock import Sock
 
 from app.config import cfg, UPLOAD_FOLDER, get_setting, key_secret_key, set_setting, \
     create_internal_config_file
-from app.data.device_repository import get_full_device, get_all_devices, add_device
 from app.data.work_logs_repository import get_full_logs, get_latest_key
 from app.features.admin.admin_routrers import admin_blue_print
 from app.features.admin.admins_repository import get_admin_user_by_flask_user, \
@@ -23,6 +22,7 @@ from app.features.admin.init_app import database_file
 from app.features.backup_database import backup_data_base
 from app.features.permissions.access_pannel import get_access_control_panel
 from app.features.permissions.permission_routers import permissions_blue_print
+from app.features.readers.manage_device import manage_device_blue_print
 from app.features.readers.reader_routers import reader_blue_print
 from app.routers.settings_routers import settings_blue_print
 from app.features.users.user_routers import user_blue_print
@@ -64,6 +64,7 @@ app.register_blueprint(permissions_blue_print)
 app.register_blueprint(user_blue_print)
 app.register_blueprint(admin_blue_print)
 app.register_blueprint(settings_blue_print)
+app.register_blueprint(manage_device_blue_print)
 
 
 def scheduler_thread():
@@ -110,15 +111,6 @@ def index():
         return flask.redirect(flask.url_for('admin.login'))
 
 
-@app.route('/device', methods=['POST'])
-@flask_login.login_required
-def add_device_route():
-    device_id = request.form['device_id']
-    device_name = request.form['device_name']
-    add_device(device_id, device_name)
-    return 'OK'
-
-
 @app.route('/access_panel', methods=['GET'])
 def access_panel():
     access_control_panel = get_access_control_panel()
@@ -142,16 +134,6 @@ def access_panel():
 @app.route('/full_log_view')
 def full_log_view():
     return render_template('full_log_view.html', logs=get_full_logs())
-
-
-@app.route('/devices')
-def devices():
-    return render_template('devices.html', devices=get_all_devices())
-
-
-@app.route("/device/<device_id>", methods=["GET"])
-def device_page(device_id):
-    return render_template("device_page.html", full_device=get_full_device(device_id))
 
 
 @websocket.route('/updater_socket')

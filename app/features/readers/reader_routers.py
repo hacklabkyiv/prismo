@@ -4,7 +4,7 @@ from flask import (
 
 from app.features.admin.init_app import get_db_connection
 from app.features.permissions.permissions_repository import get_user_with_permission_to_device
-from app.features.slack_notifier import send_dm_message
+from app.features.slack_notifier import send_dm_message, send_channel_message
 
 reader_blue_print = Blueprint('reader', __name__, url_prefix='/reader')
 
@@ -36,6 +36,10 @@ def log_operation(device_id):
 
     if operation == 'unlock':
         send_log_of_last_usage(device_id, user_key)
+        send_message_of_unlocking(device_id, user_key)
+
+    if operation == 'lock':
+        send_message_of_locking(device_id)
 
     connection = get_db_connection()
     connection.execute(
@@ -44,6 +48,36 @@ def log_operation(device_id):
     )
     connection.commit()
     return 'OK', 201
+
+
+def send_message_of_locking(device_id):
+    cursor = get_db_connection().cursor()
+    cursor.execute("SELECT slack_channel_id, name FROM devices WHERE id=?", (device_id,))
+    slack_channel_id, device_name, = cursor.fetchall()[0]
+    if slack_channel_id is None:
+        return 'No slack channel id for device ' + device_id
+
+    message = f"The {device_name} is free now"
+
+    send_channel_message(slack_channel_id, message)
+
+
+def send_message_of_unlocking(device_id, user_key):
+    cursor = get_db_connection().cursor()
+    cursor.execute("SELECT slack_channel_id, name FROM devices WHERE id=?", (device_id,))
+    slack_channel_id, device_name, = cursor.fetchall()[0]
+    if slack_channel_id is None:
+        return 'No slack channel id for device ' + device_id
+
+    user_cursor = get_db_connection().cursor()
+    user_cursor.execute("SELECT slack_id, name FROM users WHERE key=?", (user_key,))
+    slack_id, user_name = user_cursor.fetchall()[0]
+    if slack_id is None:
+        message = f"{user_name} start using the {device_name}"
+    else:
+        message = f"<@{slack_id}> start using the {device_name}"
+
+    send_channel_message(slack_channel_id, message)
 
 
 def send_log_of_last_usage(device_id, user_key):

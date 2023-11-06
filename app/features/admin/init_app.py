@@ -66,7 +66,8 @@ def init_database(admin_username: str, admin_password: str):
     
     CREATE TABLE devices(
         id   TEXT NOT NULL,
-        name TEXT NOT NULL
+        name TEXT NOT NULL,
+        slack_channel_id TEXT DEFAULT NULL
     );
     
     CREATE TABLE permissions(

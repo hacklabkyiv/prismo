@@ -27,3 +27,18 @@ def send_dm_message(user_key, message):
     )
 
     logging.info(response)
+
+
+def send_channel_message(channel_id, message):
+    slack_token = get_setting(key_slack_token)
+    if (slack_token is None) or (channel_id is None):
+        return
+
+    client = WebClient(token=slack_token)
+
+    response = client.chat_postMessage(
+        channel=channel_id,
+        text=message,
+    )
+
+    logging.info(response)
