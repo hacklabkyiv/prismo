@@ -31,6 +31,7 @@ slat_key = 'slat'
 key_slack_token = 'key_slack_token'
 key_slack_backup_channel = 'key_slack_backup_channel'
 key_secret_key = 'key_secret_key'
+key_database_version = 'key_database_version'
 
 
 def get_setting(key: str):
@@ -55,5 +56,7 @@ def set_setting(key: str, value: str):
 def create_internal_config_file():
     if not internal_config_file.is_file():
         with open(internal_config_file, 'w') as config_file:
-            json.dump({}, config_file, indent=4)
+            json.dump({
+                key_database_version: 1,
+            }, config_file, indent=4)
             config_file.close()

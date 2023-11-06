@@ -8,6 +8,17 @@ Content-Type: application/json
 {
   "operation": "lock",
   "data": {
-    "key": "user_key_1"
+    "key": "my_slack_key"
+  }
+}
+
+###
+POST http://127.0.0.1:5000/reader/device1/log_operation
+Content-Type: application/json
+
+{
+  "operation": "unlock",
+  "data": {
+    "key": "my_slack_key"
   }
 }
