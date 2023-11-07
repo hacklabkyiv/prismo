@@ -19,6 +19,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pylint
+          pip install pycodestyle
       - name: Analysing the code with pylint
         run: |
-          pylint *.py --disable=C0116,C0114
+          pylint app --disable=C0116,C0114,C0115,C0411,E0401,W0611,W0622

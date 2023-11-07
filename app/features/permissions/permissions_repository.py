@@ -26,7 +26,6 @@ def get_user_permissions(user_key) -> List[str]:
         key, = row
         user_permissions.append(key)
 
-
     logging.info('user with id %s, permissions: %s' % (user_key, user_permissions))
     return user_permissions
 

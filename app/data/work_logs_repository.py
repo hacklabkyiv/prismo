@@ -10,18 +10,18 @@ def get_latest_key() -> str | None:
     connection = get_db_connection()
     rows = (
         connection.cursor()
-        .execute("""
-        SELECT user_key 
-        FROM event_logs 
-        WHERE user_key IS NOT NULL AND operation_type = 'deny_access' 
-        ORDER BY operation_time DESC LIMIT 1""")
+        .execute(
+            "SELECT user_key "
+            "FROM event_logs "
+            "WHERE user_key IS NOT NULL AND operation_type = 'deny_access' "
+            "ORDER BY operation_time DESC LIMIT 1")
         .fetchone()
     )
 
     if rows is None:
         return None
-    else:
-        return rows[0]
+
+    return rows[0]
 
 
 def get_full_logs():

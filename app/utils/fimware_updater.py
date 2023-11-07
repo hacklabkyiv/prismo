@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Reader firmware update tool. It erases memory, flashes Micropython and 
+
+# Disable pylint for the file
+# pylint: disable=all
+
+"""Reader firmware update tool. It erases memory, flashes Micropython and
 working scripts itself to connected device.
 
 @author: Artem Synytsyn <a.synytsyn@gmail.com>

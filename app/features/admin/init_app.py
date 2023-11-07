@@ -57,24 +57,24 @@ def init_database(admin_username: str, admin_password: str):
         username TEXT NOT NULL,
         password TEXT NOT NULL
     );
-    
+
     CREATE TABLE users(
         name TEXT NOT NULL,
         key  TEXT NOT NULL,
         slack_id TEXT DEFAULT NULL
     );
-    
+
     CREATE TABLE devices(
         id   TEXT NOT NULL,
         name TEXT NOT NULL,
         slack_channel_id TEXT DEFAULT NULL
     );
-    
+
     CREATE TABLE permissions(
         device_id TEXT NOT NULL,
         user_key  TEXT NOT NULL
     );
-    
+
     CREATE TABLE event_logs(
         device_id  TEXT NOT NULL,
         user_key   TEXT,
