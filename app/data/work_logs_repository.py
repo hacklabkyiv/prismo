@@ -13,8 +13,8 @@ def get_latest_key() -> str | None:
         .execute("""
         SELECT user_key 
         FROM event_logs 
-        WHERE user_key IS NOT NULL 
-        ORDER BY operation_time LIMIT 1""")
+        WHERE user_key IS NOT NULL AND operation_type = 'deny_access' 
+        ORDER BY operation_time DESC LIMIT 1""")
         .fetchone()
     )
 
@@ -34,7 +34,7 @@ def get_full_logs():
         .execute(
             "SELECT u.name, u.key, d.name, d.id, operation_type, operation_time FROM event_logs "
             "LEFT JOIN users u ON event_logs.user_key = u.key "
-            "JOIN devices d ON d.id = event_logs.device_id "
+            "LEFT JOIN devices d ON d.id = event_logs.device_id "
             "ORDER BY operation_time DESC"
         )
         .fetchall()

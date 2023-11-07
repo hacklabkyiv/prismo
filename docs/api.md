@@ -18,8 +18,8 @@ Response:
 #### Log an operation
 
 Method: POST
-Path: `/reader/<device_id>/operation`
-List of operations: `lock`, `unlock`
+Path: `/reader/<device_id>/log_operation`
+List of operations: `lock`, `unlock`, `deny_access`
 Body for lock:
 
 ```json
@@ -33,6 +33,18 @@ Body for unlock:
 ```json
 {
   "operation": "unlock",
+  "data": {
+    "key": "<user key>"
+  }
+}
+```
+
+
+Body for deny:
+
+```json
+{
+  "operation": "deny_access",
   "data": {
     "key": "<user key>"
   }
