@@ -83,6 +83,7 @@ scheduler.start()
 # noinspection PyBroadException
 @login_manager.user_loader
 def loader_user(user_id):
+    # pylint: disable=broad-exception-caught
     try:
         return get_flask_admin_user_by_id(user_id)
     except Exception:
@@ -92,12 +93,13 @@ def loader_user(user_id):
 # noinspection PyBroadException
 @login_manager.request_loader
 def request_loader(request):
+    # pylint: disable=broad-exception-caught
     username = request.form.get('username')
     try:
-        print("user name: %s" % username)
+        print(f"user name: {username}")
         return get_flask_admin_user_by_user_name(username)
     except Exception:
-        print("none: %s" % username)
+        print(f"none: {username}")
         return None
 
 
@@ -107,8 +109,7 @@ def index():
         return flask.redirect(flask.url_for('admin.init_app_route'))
     if flask_login.current_user.is_authenticated:
         return flask.redirect(flask.url_for('access_panel'))
-    else:
-        return flask.redirect(flask.url_for('admin.login'))
+    return flask.redirect(flask.url_for('admin.login'))
 
 
 @app.route('/access_panel', methods=['GET'])
@@ -122,8 +123,8 @@ def access_panel():
     else:
         current_username = user.username
 
-    logger.info('Access control panel data: %s' % access_control_panel)
-    logger.info('Latest key: %s' % latest_key)
+    logger.info('Access control panel data: %s', access_control_panel)
+    logger.info('Latest key: %s', latest_key)
 
     return render_template("access_panel.html",
                            latest_key=latest_key,
@@ -138,4 +139,5 @@ def full_log_view():
 
 @websocket.route('/updater_socket')
 def updater(websocket):
+    # pylint: disable=redefined-outer-name
     update_firmware_full(websocket)
