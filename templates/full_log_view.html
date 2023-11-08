@@ -14,8 +14,8 @@
             <input type="text" class="form-control" id="end_time" type="datetime">
         </div>
         <div class="col-md-2 col-sm-10 d-flex align-items-end">
-            <button type="submit" class="btn btn-primary" onclick="addTimeRange()" data-step="4"
-                    data-intro="Finish addition">Search
+            <button type="submit" class="btn btn-primary" onclick="addTimeRange()">
+                Search
             </button>
         </div>
     </div>
@@ -36,9 +36,9 @@
 
 <script>
     function addTimeRange() {
-        const startTime = $('#start_time').val();
-        const endTime = $('#end_time').val();
-        const url = '/api/logs?limit=5000';
+        let startTime = $('#start_time').val();
+        let endTime = $('#end_time').val();
+        let url = '/api/logs?limit=5000';
         if (startTime) {
             url += '&start_time=' + startTime;
         }
