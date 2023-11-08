@@ -14,7 +14,7 @@ from flask import jsonify, request
 
 from app.config import cfg, UPLOAD_FOLDER, get_setting, key_secret_key, set_setting, \
     create_internal_config_file
-from app.data.work_logs_repository import get_full_logs, get_latest_key
+from app.data.work_logs_repository import get_latest_key
 from app.features.admin.admin_routrers import admin_blue_print
 from app.features.admin.admins_repository import get_admin_user_by_flask_user, \
     get_flask_admin_user_by_id, \
@@ -137,7 +137,7 @@ def access_panel():
 
 @app.route('/full_log_view')
 def full_log_view():
-    return render_template('full_log_view.html', logs=get_full_logs())
+    return render_template('full_log_view.html')
 
 # TODO all API calls, including API for readers move to separate module.
 @app.route('/api/logs', methods=['GET'])
