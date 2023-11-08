@@ -12,7 +12,7 @@ def send_dm_message(user_key, message):
     row = connection.cursor().execute("SELECT slack_id FROM users WHERE key=?",
                                       (user_key,)).fetchall()
     if len(row) != 1:
-        return 'No user with such key'
+        raise Exception('No user with such key')
     slack_id = row[0][0]
     print("slack id", slack_id)
 

@@ -60,13 +60,13 @@ def delete_user(user_key):
     connection = get_db_connection()
     connection.execute("DELETE FROM users WHERE key=?", (user_key,))
     connection.commit()
-    logging.info('User with id %s was deleted' % (user_key,))
+    logging.info('User with id %s was deleted', user_key)
 
 
 def add_user(user_name, user_key):
     connection = get_db_connection()
     connection.execute("INSERT INTO users(name, key) VALUES(?,?)", (user_name, user_key))
-    logging.info('User added: %s, %s' % (user_name, user_key))
+    logging.info('User added: %s, %s', user_name, user_key)
     connection.commit()
 
 

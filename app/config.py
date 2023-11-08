@@ -19,7 +19,7 @@ try:
     cfg = yaml.load(open(CONFIG_FILE, 'r'), Loader=Loader)
 except IOError as e:
     logging.error("Config file not found!")
-    logging.error("Exception: %s" % str(e))
+    logging.error("Exception: %s", str(e))
     sys.exit(1)
 
 database_file = Path("database.db")

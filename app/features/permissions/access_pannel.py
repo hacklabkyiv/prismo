@@ -9,11 +9,11 @@ from app.features.permissions.permissions_repository import get_user_permissions
 
 @dataclass
 class PermissionUiModel:
-    isGranted: bool
+    is_granted: bool
     device_key: str
 
     def __init__(self, is_granted, device_key):
-        self.isGranted = is_granted
+        self.is_granted = is_granted
         self.device_key = device_key
 
 

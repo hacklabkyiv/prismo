@@ -1,3 +1,4 @@
+# pylint: disable=attribute-defined-outside-init
 import flask_login
 
 from app.features.admin.init_app import get_db_connection
@@ -33,28 +34,28 @@ def get_flask_admin_user_by_credentials(username: str, password: str) -> FlaskAd
         user = FlaskAdminUser()
         user.id = db_admin_id
         return user
-    else:
-        return None
+
+    return None
 
 
 def get_flask_admin_user_by_id(user_id: str) -> FlaskAdminUser | None:
     user = get_admin_user_by_id(user_id)
     if user is None:
         return None
-    else:
-        flask_user = FlaskAdminUser()
-        flask_user.id = user.id
-        return flask_user
+
+    flask_user = FlaskAdminUser()
+    flask_user.id = user.id
+    return flask_user
 
 
 def get_flask_admin_user_by_user_name(user_name: str) -> FlaskAdminUser | None:
     user = get_admin_user_by_user_name(user_name)
     if user is None:
         return None
-    else:
-        flask_user = FlaskAdminUser()
-        flask_user.id = user.id
-        return flask_user
+
+    flask_user = FlaskAdminUser()
+    flask_user.id = user.id
+    return flask_user
 
 
 def get_admin_user_by_flask_user(flask_user) -> AdminUser | None:

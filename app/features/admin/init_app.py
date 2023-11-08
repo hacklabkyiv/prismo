@@ -93,6 +93,7 @@ def init_database(admin_username: str, admin_password: str):
 
 
 def get_db_connection():
+    # pylint: disable=global-statement
     if not is_app_inited():
         return None
 

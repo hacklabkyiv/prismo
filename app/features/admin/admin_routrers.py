@@ -10,7 +10,6 @@ admin_blue_print = Blueprint('admin', __name__)
 
 @admin_blue_print.route('/init_app', methods=['GET', 'POST'])
 def init_app_route():
-
     if request.method == 'GET':
         return render_template('init_app.html')
 
@@ -38,9 +37,9 @@ def login():
 
     if flask_admin_user is None:
         return "Bad login"
-    else:
-        flask_login.login_user(flask_admin_user)
-        return flask.redirect(flask.url_for('access_panel'))
+
+    flask_login.login_user(flask_admin_user)
+    return flask.redirect(flask.url_for('access_panel'))
 
 
 @admin_blue_print.route('/logout')

@@ -26,7 +26,7 @@ def get_user_permissions(user_key) -> List[str]:
         key, = row
         user_permissions.append(key)
 
-    logging.info('user with id %s, permissions: %s' % (user_key, user_permissions))
+    logging.info('user with id %s, permissions: %s', user_key, user_permissions)
     return user_permissions
 
 
@@ -48,7 +48,7 @@ def grant_permission(user_key, device_id):
     connection.cursor().execute(
         "INSERT INTO permissions(user_key, device_id) VALUES (?, ?)", (user_key, device_id)
     )
-    logging.info('Grant permission for user with id %s to device %s' % (user_key, device_id))
+    logging.info('Grant permission for user with id %s to device %s', user_key, device_id)
     connection.commit()
 
 
@@ -58,4 +58,4 @@ def reject_permission(user_key, device_id):
         "delete from permissions where user_key=? and device_id=?", (user_key, device_id)
     )
     connection.commit()
-    logging.info('Reject permission for user with id %s to device %s' % (user_key, device_id))
+    logging.info('Reject permission for user with id %s to device %s', user_key, device_id)

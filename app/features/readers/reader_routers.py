@@ -54,7 +54,7 @@ def send_message_of_locking(device_id):
     cursor.execute("SELECT slack_channel_id, name FROM devices WHERE id=?", (device_id,))
     slack_channel_id, device_name, = cursor.fetchall()[0]
     if slack_channel_id is None:
-        return 'No slack channel id for device ' + device_id
+        raise Exception('No slack channel id for device ' + device_id)
 
     message = f"The {device_name} is free now"
 
@@ -66,7 +66,7 @@ def send_message_of_unlocking(device_id, user_key):
     cursor.execute("SELECT slack_channel_id, name FROM devices WHERE id=?", (device_id,))
     slack_channel_id, device_name, = cursor.fetchall()[0]
     if slack_channel_id is None:
-        return 'No slack channel id for device ' + device_id
+        raise Exception('No slack channel id for device ' + device_id)
 
     user_cursor = get_db_connection().cursor()
     user_cursor.execute("SELECT slack_id, name FROM users WHERE key=?", (user_key,))

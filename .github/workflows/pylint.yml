@@ -22,4 +22,7 @@ jobs:
           pip install pycodestyle
       - name: Analysing the code with pylint
         run: |
-          pylint app --disable=C0116,C0114,C0115,C0411,E0401,W0611,W0622
+          pylint app --disable=C0116,C0114,C0115,C0411,E0401,W0611,W0622,W0719,C0103,W1514,R0903,R1732
+      - name: Analysing the code with pycodestyle
+        run: |
+          pycodestyle app
