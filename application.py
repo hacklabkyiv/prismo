@@ -10,6 +10,7 @@ import schedule
 from flask import Flask, render_template
 from flask_login import LoginManager
 from flask_sock import Sock
+from flask import jsonify, request
 
 from app.config import cfg, UPLOAD_FOLDER, get_setting, key_secret_key, set_setting, \
     create_internal_config_file
@@ -27,6 +28,8 @@ from app.features.readers.reader_routers import reader_blue_print
 from app.routers.settings_routers import settings_blue_print
 from app.features.users.user_routers import user_blue_print
 from app.utils.fimware_updater import update_firmware_full
+
+from app.data.work_logs_repository import query_event_logs
 
 app = Flask(__name__)
 
@@ -136,6 +139,16 @@ def access_panel():
 def full_log_view():
     return render_template('full_log_view.html', logs=get_full_logs())
 
+# TODO all API calls, including API for readers move to separate module.
+@app.route('/api/logs', methods=['GET'])
+def api_get_logs():
+    # TODO: error handling, input data validation etc.
+    # Retrieve parameters from the query string
+    start_time = request.args.get('start_time', default=None)
+    end_time = request.args.get('end_time', default=None)
+    limit = request.args.get('limit', default=100, type=int)
+    
+    return jsonify(query_event_logs(start_time, end_time, limit))
 
 @websocket.route('/updater_socket')
 def updater(websocket):
