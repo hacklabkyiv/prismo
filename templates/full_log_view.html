@@ -46,11 +46,11 @@
         },
         columns: [
             {
-                data: 'key',
+                data: 'name',
                 title: 'Name',
                 render: (data, type, row) => {
                     if (data === null) return '–'
-                    return '<a href="/user/' + data + '">' + data + '</a>'
+                    return '<a href="/user/' + row.key + '">' + data + '</a>'
                 }
             },
             {
