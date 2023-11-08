@@ -2,6 +2,7 @@ from app.data.device_dto import DeviceDto
 from app.data.dtos import UserDto, OperationDto
 from app.features.admin.init_app import get_db_connection
 
+from sqlite3 import Row
 
 def get_latest_key() -> str | None:
     """
@@ -23,35 +24,54 @@ def get_latest_key() -> str | None:
 
     return rows[0]
 
+def query_event_logs(start_time=None, end_time=None, limit=100, offset=0):
+    """
+    Retrieve event logs from a SQLite database within a specified time range and limit the number of results.
 
-def get_full_logs():
+    Args:
+        start_time (str, optional): The start time of the time range to filter the logs. Should be in the format 'YYYY-MM-DD HH:MM:SS'.
+        end_time (str, optional): The end time of the time range to filter the logs. Should be in the format 'YYYY-MM-DD HH:MM:SS'.
+        limit (int, optional): The maximum number of log entries to retrieve. Default is 100.
+        offset (int, optional): The offset from the beginning of the log entries to start retrieving results. Default is 0.
+
+    Returns:
+        list of dict: A list of dictionaries representing the retrieved log entries. Each dictionary contains the following keys:
+            - 'name' (str): User name.
+            - 'key' (str): User key.
+            - 'device_name' (str): Device(Reader) name.
+            - 'device_id' (int): Device(Reader) ID.
+            - 'operation_type' (str): Type of operation.
+            - 'operation_time' (str): Time of the operation in 'YYYY-MM-DD HH:MM:SS' format.
+
+    Example:
+        # Retrieve logs for a specific time range and limit the results
+        logs = query_event_logs(start_time='2023-01-01 00:00:00', end_time='2023-01-31 23:59:59', limit=50)
+    """
     connection = get_db_connection()
+    connection.row_factory = Row
+    cursor = connection.cursor()
 
-    # Select all logins to devices, including of unregistered users.
-    # These users marked as "Unknown".
-    rows = (
-        connection.cursor()
-        .execute(
-            "SELECT u.name, u.key, d.name, d.id, operation_type, operation_time FROM event_logs "
-            "LEFT JOIN users u ON event_logs.user_key = u.key "
-            "LEFT JOIN devices d ON d.id = event_logs.device_id "
-            "ORDER BY operation_time DESC"
-        )
-        .fetchall()
-    )
+    query = """
+        SELECT u.name, u.key, d.name, d.id, operation_type, operation_time
+        FROM event_logs
+        LEFT JOIN users u ON event_logs.user_key = u.key
+        LEFT JOIN devices d ON d.id = event_logs.device_id
+    """
 
-    work_log = []
-    for user_name, user_key, device_name, device_id, operation_type, operation_time in rows:
-        print(user_name, user_key, device_name, device_id, operation_type, operation_time)
-        user = UserDto(user_key, user_name)
-        device = DeviceDto(device_id, device_name)
-        operation = OperationDto(operation_time, operation_type)
+    if start_time is not None and end_time is not None:
+        query += "WHERE operation_time >= ? AND operation_time <= ?"
+        cursor.execute(query + " ORDER BY operation_time DESC LIMIT ? OFFSET ?", (start_time, end_time, limit, offset))
+    else:
+        query += "ORDER BY operation_time DESC LIMIT ? OFFSET ?"
+        cursor.execute(query, (limit, offset))
 
-        log_entry = {
-            "user": user,
-            "device": device,
-            "operation": operation,
-        }
-        work_log.append(log_entry)
+    results = cursor.fetchall()
 
-    return work_log
+    # Convert the results to a list of dictionaries
+    result_dicts = [dict(row) for row in results]
+
+    # Don't forget to close the cursor and the connection when done
+    cursor.close()
+    #connection.close()
+
+    return result_dicts
