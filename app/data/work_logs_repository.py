@@ -24,7 +24,7 @@ def get_latest_key() -> str | None:
 
     return rows[0]
 
-def query_event_logs(start_time=None, end_time=None, limit=100):
+def query_event_logs(start_time=None, end_time=None, limit=100, offset=0):
     """
     Retrieve event logs from a SQLite database within a specified time range and limit the number of results.
 
@@ -32,6 +32,7 @@ def query_event_logs(start_time=None, end_time=None, limit=100):
         start_time (str, optional): The start time of the time range to filter the logs. Should be in the format 'YYYY-MM-DD HH:MM:SS'.
         end_time (str, optional): The end time of the time range to filter the logs. Should be in the format 'YYYY-MM-DD HH:MM:SS'.
         limit (int, optional): The maximum number of log entries to retrieve. Default is 100.
+        offset (int, optional): The offset from the beginning of the log entries to start retrieving results. Default is 0.
 
     Returns:
         list of dict: A list of dictionaries representing the retrieved log entries. Each dictionary contains the following keys:
@@ -59,10 +60,10 @@ def query_event_logs(start_time=None, end_time=None, limit=100):
 
     if start_time is not None and end_time is not None:
         query += "WHERE operation_time >= ? AND operation_time <= ?"
-        cursor.execute(query + " ORDER BY operation_time DESC LIMIT ?", (start_time, end_time, limit))
+        cursor.execute(query + " ORDER BY operation_time DESC LIMIT ? OFFSET ?", (start_time, end_time, limit, offset))
     else:
-        query += "ORDER BY operation_time DESC LIMIT ?"
-        cursor.execute(query, (limit,))
+        query += "ORDER BY operation_time DESC LIMIT ? OFFSET ?"
+        cursor.execute(query, (limit, offset))
 
     results = cursor.fetchall()
 

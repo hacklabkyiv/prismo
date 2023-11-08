@@ -147,8 +147,9 @@ def api_get_logs():
     start_time = request.args.get('start_time', default=None)
     end_time = request.args.get('end_time', default=None)
     limit = request.args.get('limit', default=100, type=int)
+    offset = request.args.get('offset', default=0, type=int)
     
-    return jsonify(query_event_logs(start_time, end_time, limit))
+    return jsonify(query_event_logs(start_time, end_time, limit, offset))
 
 @websocket.route('/updater_socket')
 def updater(websocket):
