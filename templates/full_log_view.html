@@ -53,10 +53,10 @@
             dataSrc: ''
         },
         columns: [
-            { data: 'name',
+            { data: 'key',
               render: (data, type, row) => {
                 if (data === null) return '–'
-                return '<a href="/user/' + row.user_id + '">' + data + '</a>'
+                return '<a href="/user/' + data + '">' + data + '</a>'
               }
             },
             { data: 'id',
