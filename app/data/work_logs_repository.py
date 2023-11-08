@@ -75,35 +75,3 @@ def query_event_logs(start_time=None, end_time=None, limit=100, offset=0):
     #connection.close()
 
     return result_dicts
-
-def get_full_logs():
-    connection = get_db_connection()
-
-    # Select all logins to devices, including of unregistered users.
-    # These users marked as "Unknown".
-    rows = (
-        connection.cursor()
-        .execute(
-            "SELECT u.name, u.key, d.name, d.id, operation_type, operation_time FROM event_logs "
-            "LEFT JOIN users u ON event_logs.user_key = u.key "
-            "LEFT JOIN devices d ON d.id = event_logs.device_id "
-            "ORDER BY operation_time DESC"
-        )
-        .fetchall()
-    )
-
-    work_log = []
-    for user_name, user_key, device_name, device_id, operation_type, operation_time in rows:
-        print(user_name, user_key, device_name, device_id, operation_type, operation_time)
-        user = UserDto(user_key, user_name)
-        device = DeviceDto(device_id, device_name)
-        operation = OperationDto(operation_time, operation_type)
-
-        log_entry = {
-            "user": user,
-            "device": device,
-            "operation": operation,
-        }
-        work_log.append(log_entry)
-
-    return work_log
