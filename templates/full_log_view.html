@@ -21,14 +21,6 @@
     </div>
     <div class="py-3">
         <table id="logsTable" class="table stripe hover align-middle dataTable no-footer compact pt-3">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Device</th>
-                    <th>Operation type</th>
-                    <th>Time</th>
-                </tr>
-            </thead>
         </table>
     </div>
 
@@ -53,17 +45,21 @@
             dataSrc: ''
         },
         columns: [
-            { data: 'key',
-              render: (data, type, row) => {
-                if (data === null) return '–'
-                return '<a href="/user/' + data + '">' + data + '</a>'
-              }
+            {
+                data: 'key',
+                title: 'Name',
+                render: (data, type, row) => {
+                    if (data === null) return '–'
+                    return '<a href="/user/' + data + '">' + data + '</a>'
+                }
             },
-            { data: 'id',
-              render: (data, type, row) => '<a href="/device/' + data + '">' + data + '</a>'
+            {
+                data: 'id',
+                title: 'Device',
+                render: (data, type, row) => '<a href="/device/' + data + '">' + data + '</a>'
             },
-            { data: 'operation_type' },
-            { data: 'operation_time' },
+            { data: 'operation_type', title: 'Operation Type' },
+            { data: 'operation_time', title: 'Time' },
         ],
         order: [[3, 'desc']],
         pageLength: 100
