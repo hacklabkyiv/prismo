@@ -22,7 +22,7 @@ docker run --name=prisom-app -p 5000:5000 -v "$(pwd)/data/:/app/external/" vovoc
 
 ### Preconditions
 
-- Python 3.6+ with pip
+- Python 3.10+ with pip
 - git
 - supervisor(optional)
 
