@@ -149,3 +149,9 @@ Scope:
 - chat:write
 - files:write
 - incoming-webhook
+
+## Build docker
+```
+docker buildx create --use
+docker buildx build --platform linux/arm64/v8 -t vovochkastelmashchuk/prismo-app:0.0.8 --push .
+```
