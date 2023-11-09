@@ -11,6 +11,15 @@ open source, include the backend, readers firmware and PCB schema.
 
 ## Installation
 
+### By docker
+
+Create a folder `data` - the folder use for keep all persistent data, like a database. The data doesn't depend on the
+docker container.
+
+```bash
+docker run --name=prisom-app -p 5000:5000 -v "$(pwd)/data/:/app/external/" vovochkastelmashchuk/prismo-app:0.0.2
+````
+
 ### Preconditions
 
 - Python 3.6+ with pip

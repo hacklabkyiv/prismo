@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import sys
+import secrets
 from pathlib import Path
 
 import yaml
@@ -22,7 +23,8 @@ except IOError as e:
     logging.error("Exception: %s", str(e))
     sys.exit(1)
 
-database_file = Path("database.db")
+os.makedirs("external", exist_ok=True)
+database_file = Path("external/database.db")
 
 UPLOAD_FOLDER = '/uploads'
 
@@ -58,5 +60,6 @@ def create_internal_config_file():
         with open(internal_config_file, 'w') as config_file:
             json.dump({
                 key_database_version: 1,
+                key_secret_key: secrets.token_hex(32),
             }, config_file, indent=4)
             config_file.close()

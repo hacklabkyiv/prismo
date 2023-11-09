@@ -1,5 +1,4 @@
 import logging
-import secrets
 import threading
 import time
 from logging.handlers import RotatingFileHandler
@@ -36,9 +35,6 @@ app = Flask(__name__)
 create_internal_config_file()
 
 secret_key = get_setting(key_secret_key)
-if (secret_key is None) or (secret_key == ""):
-    secret_key = secrets.token_hex(32)
-    set_setting(key_secret_key, secret_key)
 
 app.config['SECRET_KEY'] = secret_key
 websocket = Sock(app)
@@ -139,6 +135,7 @@ def access_panel():
 def full_log_view():
     return render_template('full_log_view.html')
 
+
 # TODO all API calls, including API for readers move to separate module.
 @app.route('/api/logs', methods=['GET'])
 def api_get_logs():
@@ -148,10 +145,16 @@ def api_get_logs():
     end_time = request.args.get('end_time', default=None)
     limit = request.args.get('limit', default=100, type=int)
     offset = request.args.get('offset', default=0, type=int)
-    
+
     return jsonify(query_event_logs(start_time, end_time, limit, offset))
+
 
 @websocket.route('/updater_socket')
 def updater(websocket):
     # pylint: disable=redefined-outer-name
     update_firmware_full(websocket)
+
+
+if __name__ == "__main__":
+    # Please do not set debug=True in production
+    app.run(host="0.0.0.0", port=5000, debug=True)
