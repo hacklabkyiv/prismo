@@ -13,7 +13,7 @@ open source, include the backend, readers firmware and PCB schema.
 
 ### Preconditions
 
-- Python 3.6+ with pip
+- Python 3.10+ with pip
 - git
 - supervisor(optional)
 
