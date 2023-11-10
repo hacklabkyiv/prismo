@@ -1,7 +1,6 @@
 # Project-specific files
-internal_config.json
+external/
 log.txt
-database.db
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

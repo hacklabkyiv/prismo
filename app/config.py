@@ -28,7 +28,7 @@ database_file = Path("external/database.db")
 
 UPLOAD_FOLDER = '/uploads'
 
-internal_config_file = Path("internal_config.json")
+internal_config_file = Path("external/internal_config.json")
 slat_key = 'slat'
 key_slack_token = 'key_slack_token'
 key_slack_backup_channel = 'key_slack_backup_channel'
