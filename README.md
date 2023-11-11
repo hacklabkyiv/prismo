@@ -9,16 +9,72 @@ spaces.
 The gold for the project to create a system which any maker space in the world can setup for own use. The system fully
 open source, include the backend, readers firmware and PCB schema.
 
-## Installation
+## Installation by docker
 
-### By docker
-
-Create a folder `data` - the folder use for keep all persistent data, like a database. The data doesn't depend on the
-docker container.
+- Install docker on the host machine.
+  Check [the tutorial for Raspberry Pi 4](https://github.com/codingforentrepreneurs/Pi-Awesome/blob/main/how-tos/Docker%20%26%20Docker%20Compose%20on%20Raspberry%20Pi.md)
+- Create a folder `data` - the folder use for keep all persistent data, like a database.
+- Run docker container:
 
 ```bash
-docker run --name=prisom-app -p 5000:5000 -v "$(pwd)/data/:/app/external/" vovochkastelmashchuk/prismo-app:0.0.2
-````
+docker run --name=prisom-app -p 5000:5000 --restart -v "$(pwd)/data/:/app/external/" vovochkastelmashchuk/prismo-app:0.0.10
+```
+
+## Installation by docker compose
+
+```bash
+version: '3'
+
+services:
+  prisom-app:
+    image: vovochkastelmashchuk/prismo-app:0.0.10
+    container_name: prisom-app
+    ports:
+      - "5000:5000"
+    restart: always
+    volumes:
+      - "/home/pi/prismo/data/:/app/external/"
+```
+
+Add docker to autostart:
+
+```bash
+sudo systemctl enable docker
+```
+
+The application will be available on `http://localhost:5000`
+
+#### Nginx setup
+
+After installation of nginx(`sudo apt install nginx`) edit config `sudo vim /etc/nginx/conf.d/virtual.conf`
+
+```bash
+server {
+   listen       80;
+   server_name  prismo.local;
+
+   location / {
+       proxy_pass http://127.0.0.1:8000;
+   }
+}
+```
+
+This config should be placed as `prismo.conf` into `/etc/supervisor/conf.d/`
+The application doesn't create any table in database, so you should create it manually. See section "Prepare database"
+
+### Configuration
+
+Config file name is `config.cfg`, the file located in the root directory of the project. Configs stored in YAML format.
+
+```
+logging:
+    debug: Yes
+    logfile: log.txt
+    logsize_kb: 1000
+    rolldepth: 3
+```
+
+## Development
 
 ### Preconditions
 
@@ -56,70 +112,7 @@ docker run --name=prisom-app -p 5000:5000 -v "$(pwd)/data/:/app/external/" vovoc
     pip3 install -r requirements.txt
     ```
 
-5. Run app:
-
-   ```sh
-   export FLASK_APP=application.py && flask run
-   ```
-
-#### Supper visitor setup
-
-Install supervisor
-
-```bash
-sudo apt install supervisor
-```
-
-Server autostart using `supervisor`
-
-Supervisor is handy tool for autostart different scripts in userspace(supervisord.org). Here is example of configuration
-script for this:
-
-```
-[program:prismo]
-command=/home/prismo/prismo/.venv/bin/python /home/prismo/prismo/.venv/bin/gunicorn --bind 0.0.0.0:8000 application:app
-directory=/home/prismo/prismo
-startsecs=5
-autostart=true
-autorestart=true
-redirect_stderr=true
-stderr_logfile=/var/log/prismo/prismo.err.log
-stdout_logfile=/var/log/prismo/prismo.out.log  
-```
-
-#### Nginx setup
-
-After installation of nginx(`sudo apt install nginx`) edit config `sudo vim /etc/nginx/conf.d/virtual.conf`
-
-```bash
-server {
-   listen       80;
-   server_name  prismo.local;
-
-   location / {
-       proxy_pass http://127.0.0.1:8000;
-   }
-}
-```
-
-This config should be placed as `prismo.conf` into `/etc/supervisor/conf.d/`
-The application doesn't create any table in database, so you should create it manually. See section "Prepare database"
-
-### Configuration
-
-Config file name is `config.cfg`, the file located in the root directory of the project. Configs stored in YAML format.
-
-```
-logging:
-    debug: Yes
-    logfile: log.txt
-    logsize_kb: 1000
-    rolldepth: 3
-```
-
-## Development
-
-Run for debugging and development: (it will reload app on code changes and enable debug mode)
+5. Run for debugging and development: (it will reload app on code changes and enable debug mode)
 
 ```sh
 export FLASK_APP=application.py
@@ -150,8 +143,12 @@ Scope:
 - files:write
 - incoming-webhook
 
-## Build docker
+## Build docker image
+
+The main target platform is `linux/arm64/v8` (Raspberry Pi 4). To build docker image for this platform you should use
+buildx.
+
 ```
 docker buildx create --use
-docker buildx build --platform linux/arm64/v8 -t vovochkastelmashchuk/prismo-app:0.0.8 --push .
+docker buildx build --platform linux/arm64/v8 -t vovochkastelmashchuk/prismo-app:<version> --push .
 ```
