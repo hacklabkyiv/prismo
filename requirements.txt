@@ -8,3 +8,4 @@ flask-login
 schedule
 pylint
 pycodestyle
+gunicorn==20.0.4

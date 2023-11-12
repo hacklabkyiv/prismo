@@ -45,18 +45,16 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-if cfg['logging']['debug'] is True:
-    app.config['DEBUG'] = True
-    logging.basicConfig(level=logging.DEBUG)
-    # Create logger to be able to use rolling logs
-    logger.setLevel(logging.DEBUG)
-    log_handler = RotatingFileHandler(cfg['logging']['logfile'], mode='a',
-                                      maxBytes=int(cfg['logging']['logsize_kb']) * 1024,
-                                      backupCount=int(cfg['logging']['rolldepth']),
-                                      delay=0)
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    log_handler.setFormatter(formatter)
-    logger.addHandler(log_handler)
+logging.basicConfig(level=logging.DEBUG)
+# Create logger to be able to use rolling logs
+logger.setLevel(logging.DEBUG)
+log_handler = RotatingFileHandler(cfg['logging']['logfile'], mode='a',
+                                  maxBytes=int(cfg['logging']['logsize_kb']) * 1024,
+                                  backupCount=int(cfg['logging']['rolldepth']),
+                                  delay=0)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+log_handler.setFormatter(formatter)
+logger.addHandler(log_handler)
 
 app.register_blueprint(reader_blue_print)
 app.register_blueprint(permissions_blue_print)
@@ -153,8 +151,3 @@ def api_get_logs():
 def updater(websocket):
     # pylint: disable=redefined-outer-name
     update_firmware_full(websocket)
-
-
-if __name__ == "__main__":
-    # Please do not set debug=True in production
-    app.run(host="0.0.0.0", port=5000, debug=True)

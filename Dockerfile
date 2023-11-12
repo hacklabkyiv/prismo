@@ -8,5 +8,4 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 
 COPY . /app
 
-ENTRYPOINT ["python"]
-CMD ["application.py"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "application:app"]

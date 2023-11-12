@@ -17,7 +17,7 @@ open source, include the backend, readers firmware and PCB schema.
 - Run docker container:
 
 ```bash
-docker run --name=prisom-app -p 5000:5000 --restart -v "$(pwd)/data/:/app/external/" vovochkastelmashchuk/prismo-app:0.0.10
+docker run --name=prisom-app -p 5000:5000 --restart -v "$(pwd)/data/:/app/external/" hacklabkyiv/prismo-app:0.1.4
 ```
 
 ## Installation by docker compose
@@ -26,14 +26,23 @@ docker run --name=prisom-app -p 5000:5000 --restart -v "$(pwd)/data/:/app/extern
 version: '3'
 
 services:
-  prisom-app:
-    image: vovochkastelmashchuk/prismo-app:0.0.10
-    container_name: prisom-app
+  prismo-app:
+    image: hacklabkyiv/prismo-app:0.1.5
+    container_name: prismo-app
     ports:
       - "5000:5000"
     restart: always
     volumes:
-      - "/home/pi/prismo/data/:/app/external/"
+      - ./data/:/app/external/
+  nginx:
+    image: nginx
+    container_name: nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - "80:80"
+    depends_on:
+      - prismo-app
 ```
 
 Add docker to autostart:
@@ -50,12 +59,12 @@ After installation of nginx(`sudo apt install nginx`) edit config `sudo vim /etc
 
 ```bash
 server {
-   listen       80;
-   server_name  prismo.local;
+    listen      80;
+    server_name localhost;
 
-   location / {
-       proxy_pass http://127.0.0.1:8000;
-   }
+    location / {
+        proxy_pass "http://prismo-app:5000/";
+    }
 }
 ```
 
@@ -148,7 +157,10 @@ Scope:
 The main target platform is `linux/arm64/v8` (Raspberry Pi 4). To build docker image for this platform you should use
 buildx.
 
+Execute `docker login` with hacklabkyiv credentials.
+Execute this commands in the root directory of the project:
+
 ```
 docker buildx create --use
-docker buildx build --platform linux/arm64/v8 -t vovochkastelmashchuk/prismo-app:<version> --push .
+docker buildx build --platform linux/arm64/v8 -t hacklabkyiv/prismo-app:<version> --push .
 ```
