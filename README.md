@@ -17,32 +17,7 @@ open source, include the backend, readers firmware and PCB schema.
 - Run docker container:
 
 ```bash
-docker run --name=prisom-app -p 5000:5000 --restart -v "$(pwd)/data/:/app/external/" hacklabkyiv/prismo-app:0.1.4
-```
-
-## Installation by docker compose
-
-```bash
-version: '3'
-
-services:
-  prismo-app:
-    image: hacklabkyiv/prismo-app:0.1.5
-    container_name: prismo-app
-    ports:
-      - "5000:5000"
-    restart: always
-    volumes:
-      - ./data/:/app/external/
-  nginx:
-    image: nginx
-    container_name: nginx
-    volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
-    ports:
-      - "80:80"
-    depends_on:
-      - prismo-app
+docker run --name=prisom-app -p 80:5000 --restart always --detach -v "$(pwd)/data/:/app/external/" hacklabkyiv/prismo-app:0.1.5
 ```
 
 Add docker to autostart:
@@ -50,26 +25,7 @@ Add docker to autostart:
 ```bash
 sudo systemctl enable docker
 ```
-
-The application will be available on `http://localhost:5000`
-
-#### Nginx setup
-
-After installation of nginx(`sudo apt install nginx`) edit config `sudo vim /etc/nginx/conf.d/virtual.conf`
-
-```bash
-server {
-    listen      80;
-    server_name localhost;
-
-    location / {
-        proxy_pass "http://prismo-app:5000/";
-    }
-}
-```
-
-This config should be placed as `prismo.conf` into `/etc/supervisor/conf.d/`
-The application doesn't create any table in database, so you should create it manually. See section "Prepare database"
+The application ready to work and available on `http://localhost:5000`
 
 ### Configuration
 
@@ -77,7 +33,6 @@ Config file name is `config.cfg`, the file located in the root directory of the 
 
 ```
 logging:
-    debug: Yes
     logfile: log.txt
     logsize_kb: 1000
     rolldepth: 3
