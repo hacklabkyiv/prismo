@@ -1,3 +1,5 @@
+import logging
+
 from flask import Blueprint, request
 
 from app.features.admin.init_app import get_db_connection
@@ -20,6 +22,8 @@ def accesses(device_id):
 def log_operation(device_id):
 
     json_data = json.loads(request.get_json())
+
+    logging.info("Received request: " + str(json_data))
 
     operation = json_data["operation"]
     if operation not in ["lock", "unlock", "deny_access"]:
