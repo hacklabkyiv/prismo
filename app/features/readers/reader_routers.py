@@ -1,60 +1,62 @@
-from flask import (
-    Blueprint, request
-)
+from flask import Blueprint, request
 
 from app.features.admin.init_app import get_db_connection
-from app.features.permissions.permissions_repository import get_user_with_permission_to_device
+from app.features.permissions.permissions_repository import (
+    get_user_with_permission_to_device,
+)
 from app.features.slack_notifier import send_dm_message, send_channel_message
 
 import json
 
-reader_blue_print = Blueprint('reader', __name__, url_prefix='/reader')
+reader_blue_print = Blueprint("reader", __name__, url_prefix="/reader")
 
 
-@reader_blue_print.route('/<device_id>/accesses/', methods=['GET'])
+@reader_blue_print.route("/<device_id>/accesses/", methods=["GET"])
 def accesses(device_id):
-    return {
-        'keys': get_user_with_permission_to_device(device_id)
-    }
+    return {"keys": get_user_with_permission_to_device(device_id)}
 
 
-@reader_blue_print.route('/<device_id>/log_operation', methods=['POST'])
+@reader_blue_print.route("/<device_id>/log_operation", methods=["POST"])
 def log_operation(device_id):
-    json_data = request.json
-    operation = json_data['operation']
-    if operation not in ['lock', 'unlock', 'deny_access']:
-        raise Exception('Invalid operation')
+
+    json_data = json.loads(request.get_json())
+
+    operation = json_data["operation"]
+    if operation not in ["lock", "unlock", "deny_access"]:
+        raise Exception("Invalid operation")
 
     try:
         user_key = json_data["key"]
     except KeyError:
         user_key = None
 
-    if (operation == 'unlock') and user_key is None:
-        raise Exception('Invalid operation')
+    if (operation == "unlock") and user_key is None:
+        raise Exception("Invalid operation")
 
-    if operation == 'unlock':
+    if operation == "unlock":
         send_log_of_last_usage(device_id, user_key)
         send_message_of_unlocking(device_id, user_key)
 
-    if operation == 'lock':
+    if operation == "lock":
         send_message_of_locking(device_id)
 
     connection = get_db_connection()
     connection.execute(
         "INSERT INTO event_logs(device_id, user_key, operation_type) VALUES (?, ?, ?)",
-        (device_id, user_key, operation)
+        (device_id, user_key, operation),
     )
     connection.commit()
-    return 'OK', 201
+    return "OK", 201
 
 
 def send_message_of_locking(device_id):
     cursor = get_db_connection().cursor()
-    cursor.execute("SELECT slack_channel_id, name FROM devices WHERE id=?", (device_id,))
+    cursor.execute(
+        "SELECT slack_channel_id, name FROM devices WHERE id=?", (device_id,)
+    )
     slack_channel_id, device_name, = cursor.fetchall()[0]
     if slack_channel_id is None:
-        raise Exception('No slack channel id for device ' + device_id)
+        raise Exception("No slack channel id for device " + device_id)
 
     message = f"The {device_name} is free now"
 
@@ -63,10 +65,12 @@ def send_message_of_locking(device_id):
 
 def send_message_of_unlocking(device_id, user_key):
     cursor = get_db_connection().cursor()
-    cursor.execute("SELECT slack_channel_id, name FROM devices WHERE id=?", (device_id,))
+    cursor.execute(
+        "SELECT slack_channel_id, name FROM devices WHERE id=?", (device_id,)
+    )
     slack_channel_id, device_name, = cursor.fetchall()[0]
     if slack_channel_id is None:
-        raise Exception('No slack channel id for device ' + device_id)
+        raise Exception("No slack channel id for device " + device_id)
 
     user_cursor = get_db_connection().cursor()
     user_cursor.execute("SELECT slack_id, name FROM users WHERE key=?", (user_key,))
@@ -87,7 +91,8 @@ def send_log_of_last_usage(device_id, user_key):
         "JOIN users user ON event_logs.user_key = user.key "
         "WHERE device_id = ? and operation_type = 'unlock' "
         "ORDER BY operation_time DESC "
-        "LIMIT 3", (device_id,)
+        "LIMIT 3",
+        (device_id,),
     )
     rows = cursor.fetchall()
     message = "The last 3 people who unlocked the door were: \n"
