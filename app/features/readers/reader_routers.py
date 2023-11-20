@@ -58,13 +58,18 @@ def send_message_of_locking(device_id):
     cursor.execute(
         "SELECT slack_channel_id, name FROM devices WHERE id=?", (device_id,)
     )
-    slack_channel_id, device_name, = cursor.fetchall()[0]
-    if slack_channel_id is None:
-        raise Exception("No slack channel id for device " + device_id)
+    try:
+        slack_channel_id, device_name, = cursor.fetchall()[0]
+        if slack_channel_id is None:
+            raise Exception("No slack channel id for device " + device_id)
 
-    message = f"The {device_name} is free now"
+        message = f"The {device_name} is free now"
 
-    send_channel_message(slack_channel_id, message)
+        send_channel_message(slack_channel_id, message)
+    except Exception as err:
+        print("Cannot send slack message.")
+        print(f"Unexpected {err=}, {type(err)=}")
+        # raise
 
 
 def send_message_of_unlocking(device_id, user_key):
@@ -72,19 +77,24 @@ def send_message_of_unlocking(device_id, user_key):
     cursor.execute(
         "SELECT slack_channel_id, name FROM devices WHERE id=?", (device_id,)
     )
-    slack_channel_id, device_name, = cursor.fetchall()[0]
-    if slack_channel_id is None:
-        raise Exception("No slack channel id for device " + device_id)
+    try:
+        slack_channel_id, device_name, = cursor.fetchall()[0]
+        if slack_channel_id is None:
+            raise Exception("No slack channel id for device " + device_id)
 
-    user_cursor = get_db_connection().cursor()
-    user_cursor.execute("SELECT slack_id, name FROM users WHERE key=?", (user_key,))
-    slack_id, user_name = user_cursor.fetchall()[0]
-    if slack_id is None:
-        message = f"{user_name} start using the {device_name}"
-    else:
-        message = f"<@{slack_id}> start using the {device_name}"
+        user_cursor = get_db_connection().cursor()
+        user_cursor.execute("SELECT slack_id, name FROM users WHERE key=?", (user_key,))
+        slack_id, user_name = user_cursor.fetchall()[0]
+        if slack_id is None:
+            message = f"{user_name} start using the {device_name}"
+        else:
+            message = f"<@{slack_id}> start using the {device_name}"
 
-    send_channel_message(slack_channel_id, message)
+        send_channel_message(slack_channel_id, message)
+    except Exception as err:
+        print("Cannot send slack message.")
+        print(f"Unexpected {err=}, {type(err)=}")
+        # raise
 
 
 def send_log_of_last_usage(device_id, user_key):
@@ -100,11 +110,16 @@ def send_log_of_last_usage(device_id, user_key):
     )
     rows = cursor.fetchall()
     message = "The last 3 people who unlocked the door were: \n"
-    for row in rows:
-        slack_id, name, operation_time = row
-        if slack_id is None:
-            message += f"{name} at {operation_time}\n"
-        else:
-            message += f"<@{slack_id}> at {operation_time}\n"
+    try:
+        for row in rows:
+            slack_id, name, operation_time = row
+            if slack_id is None:
+                message += f"{name} at {operation_time}\n"
+            else:
+                message += f"<@{slack_id}> at {operation_time}\n"
 
-    send_dm_message(user_key, message)
+        send_dm_message(user_key, message)
+    except Exception as err:
+        print("Cannot send slack message.")
+        print(f"Unexpected {err=}, {type(err)=}")
+        # raise
