@@ -49,7 +49,7 @@
                     <td>
                         <input type="checkbox" name="box1"
                                onChange="onUserPermissionChange('{{row.user_key}}', '{{permission.device_key}}', this)"
-                               value="box1" {{ 'checked="checked"' if permission.isGranted else ""}}>
+                               value="box1" {{ 'checked="checked"' if permission.is_granted else ""}}>
                     </td>
                     {% endfor %}
                     <td>

@@ -17,7 +17,7 @@ open source, include the backend, readers firmware and PCB schema.
 - Run docker container:
 
 ```bash
-docker run --name=prismo-app -p 80:5000 --restart always --detach -v "$(pwd)/data/:/app/external/" hacklabkyiv/prismo-app:0.1.5
+docker run --name=prismo-app -p 80:5000 --restart always --detach -v "$(pwd)/data/:/app/external/" hacklabkyiv/prismo-app:0.1.7
 ```
 
 Add docker to autostart:
