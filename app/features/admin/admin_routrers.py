@@ -39,7 +39,7 @@ def login():
         return "Bad login"
 
     flask_login.login_user(flask_admin_user)
-    return flask.redirect(flask.url_for('access_panel'))
+    return flask.redirect(flask.url_for('users'))
 
 
 @admin_blue_print.route('/logout')

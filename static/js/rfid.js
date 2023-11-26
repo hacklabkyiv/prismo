@@ -48,22 +48,20 @@ function onUserDeleteClick(user_key, a) {
     xhr.send(data);
 }
 
-function addUser() {
-    var name = $("#user_name").val();
-    var key = $("#user_key").val();
+function addUser(user_key, user_name) {
     var data = new FormData();
 
-    if (name == "") {
+    if (user_name == "") {
         alert("Please specify nickname!");
         return 0;
     }
-    if (key == "") {
+    if (user_key == "") {
         alert("Please specify access key!");
         return 0;
     }
 
-    data.append('nick', name);
-    data.append('key', key);
+    data.append('nick', user_name);
+    data.append('key', user_key);
 
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function () {
@@ -113,4 +111,16 @@ function addDevice() {
     xhr.send(data);
 
     console.log(data);
+}
+
+function truncateString(str, firstCharCount = str.length, endCharCount = 0, dotCount = 3) {
+    if (str.length <= firstCharCount + endCharCount) {
+        return str; // No truncation needed
+    }
+
+    const firstPortion = str.slice(0, firstCharCount);
+    const endPortion = str.slice(-endCharCount);
+    const dots = '.'.repeat(dotCount);
+
+    return `${firstPortion}${dots}${endPortion}`;
 }

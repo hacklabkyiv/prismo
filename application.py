@@ -56,25 +56,25 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 log_handler.setFormatter(formatter)
 logger.addHandler(log_handler)
 
-app.register_blueprint(reader_blue_print)
-app.register_blueprint(permissions_blue_print)
+#app.register_blueprint(reader_blue_print)
+#app.register_blueprint(permissions_blue_print)
 app.register_blueprint(user_blue_print)
 app.register_blueprint(admin_blue_print)
-app.register_blueprint(settings_blue_print)
-app.register_blueprint(manage_device_blue_print)
+#app.register_blueprint(settings_blue_print)
+#app.register_blueprint(manage_device_blue_print)
 
 
-def scheduler_thread():
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
+#def scheduler_thread():
+#    while True:
+#        schedule.run_pending()
+#        time.sleep(1)
 
 
-schedule.every().day.at("22:17").do(backup_data_base)
+#schedule.every().day.at("22:17").do(backup_data_base)
 
-scheduler = threading.Thread(target=scheduler_thread)
-scheduler.daemon = True
-scheduler.start()
+#scheduler = threading.Thread(target=scheduler_thread)
+#scheduler.daemon = True
+#scheduler.start()
 
 
 # noinspection PyBroadException
@@ -105,12 +105,13 @@ def index():
     if not database_file.is_file():
         return flask.redirect(flask.url_for('admin.init_app_route'))
     if flask_login.current_user.is_authenticated:
-        return flask.redirect(flask.url_for('access_panel'))
+        return flask.redirect(flask.url_for('users'))
     return flask.redirect(flask.url_for('admin.login'))
 
 
-@app.route('/access_panel', methods=['GET'])
-def access_panel():
+@app.route('/users', methods=['GET'])
+@flask_login.login_required
+def users():
     access_control_panel = get_access_control_panel()
     latest_key = get_latest_key()
 
@@ -123,16 +124,51 @@ def access_panel():
     logger.info('Access control panel data: %s', access_control_panel)
     logger.info('Latest key: %s', latest_key)
 
-    return render_template("access_panel.html",
+    return render_template("users.html",
                            latest_key=latest_key,
                            access_control_panel=access_control_panel,
                            current_user=current_username)
 
+@app.route('/devices')
+@flask_login.login_required
+def devices():
+    return render_template('devices.html')
 
-@app.route('/full_log_view')
-def full_log_view():
-    return render_template('full_log_view.html')
+@app.route('/logs')
+@flask_login.login_required
+def logs():
+    return render_template('logs.html')
 
+@app.route('/settings', methods=['GET', 'POST'])
+@flask_login.login_required
+def settings():
+    """
+    if request.method == 'POST':
+        slack_token = request.form.get('slack_token')
+        channel_id = request.form.get('channel_id')
+
+        if slack_token is not None:
+            set_setting(key_slack_token, slack_token)
+
+        if channel_id is not None:
+            set_setting(key_slack_backup_channel, channel_id)
+
+    settings = {}
+    saved_slack_token = get_setting(key_slack_token)
+
+    if saved_slack_token is not None:
+        settings['slack_token'] = get_setting(key_slack_token)
+
+    saved_channel_id = get_setting(key_slack_backup_channel)
+    if saved_channel_id is not None:
+        settings['channel_id'] = get_setting(key_slack_backup_channel)
+    """
+    return render_template('settings.html', settings=settings)
+
+
+"""
+Routes and logic for REST API used by web application
+"""
 
 # TODO all API calls, including API for readers move to separate module.
 @app.route('/api/logs', methods=['GET'])
@@ -151,3 +187,8 @@ def api_get_logs():
 def updater(websocket):
     # pylint: disable=redefined-outer-name
     update_firmware_full(websocket)
+
+
+"""
+Routes and logic for reader API
+"""
