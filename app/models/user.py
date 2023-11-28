@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Nov 27 00:59:01 2023
-
-@author: artsin
-"""
 import sqlite3
 
 
@@ -13,35 +6,6 @@ class User:
         self.name = name
         self.key = key
         self.slack_id = slack_id
-
-    @classmethod
-    def create_table(cls):
-        connection = sqlite3.connect("database.db")
-        cursor = connection.cursor()
-        cursor.execute(
-            """
-            CREATE TABLE IF NOT EXISTS users (
-                name TEXT NOT NULL,
-                key TEXT NOT NULL UNIQUE,
-                slack_id TEXT DEFAULT NULL
-            )
-        """
-        )
-        connection.commit()
-        connection.close()
-
-    def save(self):
-        connection = sqlite3.connect("database.db")
-        cursor = connection.cursor()
-        cursor.execute(
-            """
-            INSERT INTO users (name, key, slack_id)
-            VALUES (?, ?, ?)
-        """,
-            (self.name, self.key, self.slack_id),
-        )
-        connection.commit()
-        connection.close()
 
     @classmethod
     def get_by_key(cls, key):
@@ -147,6 +111,3 @@ class User:
         connection.commit()
         connection.close()
 
-
-x = User.get_permissions()
-print(x)

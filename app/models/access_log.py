@@ -39,7 +39,7 @@ class AccessLog:
             logs = query_event_logs(start_time='2023-01-01 00:00:00', end_time='2023-01-31 23:59:59',
             limit=50)
         """
-        connection = sqlite3.connect('database.db')
+        connection = sqlite3.connect("database.db")
         connection.row_factory = sqlite3.Row
         cursor = connection.cursor()
 
@@ -52,8 +52,10 @@ class AccessLog:
 
         if start_time is not None and end_time is not None:
             query += "WHERE operation_time >= ? AND operation_time <= ?"
-            cursor.execute(query + " ORDER BY operation_time DESC LIMIT ? OFFSET ?",
-                           (start_time, end_time, limit, offset))
+            cursor.execute(
+                query + " ORDER BY operation_time DESC LIMIT ? OFFSET ?",
+                (start_time, end_time, limit, offset),
+            )
         else:
             query += "ORDER BY operation_time DESC LIMIT ? OFFSET ?"
             cursor.execute(query, (limit, offset))

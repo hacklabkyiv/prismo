@@ -4,7 +4,7 @@ from flask_login import (
     login_user,
     logout_user,
     login_required,
-    current_user
+    current_user,
 )
 from flask_sock import Sock
 from flask import Flask, render_template, jsonify, request, redirect, url_for
@@ -68,6 +68,7 @@ logger.addHandler(log_handler)
 
 # Admin routes
 
+
 class User(UserMixin):
     def __init__(self, username, password):
         self.username = ""
@@ -76,12 +77,15 @@ class User(UserMixin):
 
     def check_password(self, password):
         return True
+
     def is_authenticated(self):
         return True
-    
+
+
 @login_manager.user_loader
 def load_user(user_id):
     return User("", "")
+
 
 @app.route("/init_app", methods=["GET", "POST"])
 def init_app_route():
@@ -100,6 +104,7 @@ def init_app_route():
 
     return redirect(url_for("admin.login"))
 
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
@@ -107,13 +112,13 @@ def login():
 
     if request.method == "GET":
         return render_template("auth/login.html")
-    
+
     username = request.form["username"]
     password = request.form["password"]
 
     user = User(username, password)
     if user is None or not user.check_password(password):
-        return render_template('auth/login.html', error='Invalid username or password')
+        return render_template("auth/login.html", error="Invalid username or password")
 
     login_user(user)
     return redirect(url_for("users"))
