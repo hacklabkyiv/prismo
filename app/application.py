@@ -6,7 +6,7 @@ from flask_login import (
     login_required,
     current_user,
 )
-from flask_sock import Sock
+
 from flask import Flask, render_template, jsonify, request, redirect, url_for
 
 import logging
@@ -20,10 +20,14 @@ from models.device import Device
 from models.user import User
 from models.access_log import AccessLog
 
+from api.web_api import web_api
+
 app = Flask(__name__)
+app.register_blueprint(web_api)
+
+
 
 app.config["SECRET_KEY"] = "secret_key"
-websocket = Sock(app)
 logger = logging.getLogger(__name__)
 
 login_manager = LoginManager()
@@ -191,36 +195,3 @@ def settings():
         settings['channel_id'] = get_setting(key_slack_backup_channel)
     """
     return render_template("prismo/settings.html", settings=settings)
-
-
-"""
-Routes and logic for REST API used by web application
-"""
-
-# TODO all API calls, including API for readers move to separate module.
-@app.route("/api/logs", methods=["GET"])
-def api_get_logs():
-    # TODO: error handling, input data validation etc.
-    # Retrieve parameters from the query string
-    start_time = request.args.get("start_time", default=None)
-    end_time = request.args.get("end_time", default=None)
-    limit = request.args.get("limit", default=100, type=int)
-    offset = request.args.get("offset", default=0, type=int)
-
-    return jsonify(AccessLog.get_full_log(start_time, end_time, limit, offset))
-
-
-@app.route("/api/users", methods=["GET"])
-def api_get_user_permissions():
-    return jsonify(User.get_permissions())
-
-
-# @websocket.route('/updater_socket')
-# def updater(websocket):
-#    # pylint: disable=redefined-outer-name
-#    update_firmware_full(websocket)
-
-
-"""
-Routes and logic for reader API
-"""
