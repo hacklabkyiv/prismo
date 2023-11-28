@@ -41,7 +41,7 @@ class Device:
         Returns:
             List[dict]: A list of dictionaries representing the devices.
         """
-        connection = sqlite3.connect('/home/artsin/Dev/prismo/database.db')
+        connection = sqlite3.connect('database.db')
         connection.row_factory = sqlite3.Row
         cursor = connection.cursor()
         cursor.execute('SELECT * FROM devices')
@@ -59,7 +59,7 @@ class Device:
         #Returns:
         #    List: A list of string of device names representing the devices.
         #"
-        connection = sqlite3.connect('/home/artsin/Dev/prismo/database.db')
+        connection = sqlite3.connect('database.db')
         connection.row_factory = sqlite3.Row
         cursor = connection.cursor()
         cursor.execute('SELECT id, name FROM devices')

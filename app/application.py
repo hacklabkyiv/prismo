@@ -16,9 +16,9 @@ from logging.handlers import RotatingFileHandler
 
 
 # New
-from app.models.device import Device
-from app.models.user import User
-from app.models.access_log import AccessLog
+from models.device import Device
+from models.user import User
+from models.access_log import AccessLog
 
 app = Flask(__name__)
 
@@ -86,7 +86,7 @@ def load_user(user_id):
 @app.route("/init_app", methods=["GET", "POST"])
 def init_app_route():
     if request.method == "GET":
-        return render_template("init_app.html")
+        return render_template("auth/init_app.html")
 
     username = request.form["username"]
     password = request.form["password"]
@@ -106,14 +106,14 @@ def login():
         return redirect(url_for("users"))
 
     if request.method == "GET":
-        return render_template("login.html")
+        return render_template("auth/login.html")
     
     username = request.form["username"]
     password = request.form["password"]
 
     user = User(username, password)
     if user is None or not user.check_password(password):
-        return render_template('login.html', error='Invalid username or password')
+        return render_template('auth/login.html', error='Invalid username or password')
 
     login_user(user)
     return redirect(url_for("users"))
@@ -145,20 +145,20 @@ def users():
     latest_triggered_key = Device.get_latest_key()
     logger.info("Latest triggered key: %s", latest_triggered_key)
 
-    return render_template("users.html", latest_key=latest_triggered_key)
+    return render_template("prismo/users.html", latest_key=latest_triggered_key)
 
 
 @app.route("/devices")
 @login_required
 def devices():
     devices = Device.get_all_devices()
-    return render_template("devices.html", devices=devices)
+    return render_template("prismo/devices.html", devices=devices)
 
 
 @app.route("/logs")
 @login_required
 def logs():
-    return render_template("logs.html")
+    return render_template("prismo/logs.html")
 
 
 @app.route("/settings", methods=["GET", "POST"])
@@ -185,7 +185,7 @@ def settings():
     if saved_channel_id is not None:
         settings['channel_id'] = get_setting(key_slack_backup_channel)
     """
-    return render_template("settings.html", settings=settings)
+    return render_template("prismo/settings.html", settings=settings)
 
 
 """
