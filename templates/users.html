@@ -16,36 +16,6 @@
     </div>
     <div class="py-3">
         <div class="py-3 table-responsive">
-            <table id="tblData" class="table stripe hover align-middle dataTable no-footer compact pt-3">
-                <thead>
-                <tr>
-                    {% for column_name in access_control_panel.header %}
-                    <th>{{ column_name }}</th>
-                    {% endfor %}
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody id="table_body">
-                {% for row in access_control_panel.rows %}
-                <tr>
-                    <td><a href="/user/{{row.user_key}}">{{row.user_name}}</a></td>
-                    <td>{{row.user_key}}</td>
-                    {% for permission in row.permissions %}
-                    <td>
-                        <input type="checkbox" name="box1"
-                               onChange="onUserPermissionChange('{{row.user_key}}', '{{permission.device_key}}', this)"
-                               value="box1" {{ 'checked="checked"' if permission.is_granted else ""}}>
-                    </td>
-                    {% endfor %}
-                    <td>
-                        <a class="btn btn-danger btn-sm" onclick="onUserDeleteClick('{{row.user_key}}', this)">
-                            <i style="color: white" class="fa fa-trash-o"></i>
-                        </a>
-                    </td>
-                </tr>
-                {% endfor %}
-                </tbody>
-            </table>
         </div>
     </div>
 </div>

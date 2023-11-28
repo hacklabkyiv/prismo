@@ -1,7 +1,7 @@
 function onUserPermissionChange(user_key, device_id, context) {
     console.log('change permission for user ' + user_key + ' on device ' + device_id);
 
-    var data = new FormData();
+    let data = new FormData();
     data.append('user_key', user_key);
     data.append('device_id', device_id);
 
@@ -13,7 +13,7 @@ function onUserPermissionChange(user_key, device_id, context) {
 
     console.log('method: ' + method);
 
-    var xhr = new XMLHttpRequest();
+    let xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function () {
         if (xhr.readyState == 4) {
             if (xhr.status != 200) {
@@ -30,10 +30,10 @@ function onUserPermissionChange(user_key, device_id, context) {
 function onUserDeleteClick(user_key, a) {
     console.log('onUserDeleteClick ' + user_key);
 
-    var data = new FormData();
+    let data = new FormData();
     data.append('user_key', user_key);
 
-    var xhr = new XMLHttpRequest();
+    let xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function () {
         if (xhr.readyState == 4) {
             if (xhr.status != 200) {
@@ -49,7 +49,7 @@ function onUserDeleteClick(user_key, a) {
 }
 
 function addUser(user_key, user_name) {
-    var data = new FormData();
+    let data = new FormData();
 
     if (user_name == "") {
         alert("Please specify nickname!");
@@ -63,7 +63,7 @@ function addUser(user_key, user_name) {
     data.append('nick', user_name);
     data.append('key', user_key);
 
-    var xhr = new XMLHttpRequest();
+    let xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function () {
         if (xhr.readyState == 4) {
             if (xhr.status != 200) {
@@ -80,9 +80,9 @@ function addUser(user_key, user_name) {
 
 function addDevice() {
     console.log("Add device called");
-    var device_name = $("#device_name").val();
-    var device_id = $("#device_id").val();
-    var data = new FormData();
+    let device_name = $("#device_name").val();
+    let device_id = $("#device_id").val();
+    let data = new FormData();
 
     if (device_name == "") {
         alert("Please specify device_name!");
@@ -96,7 +96,7 @@ function addDevice() {
     data.append('device_name', device_name);
     data.append('device_id', device_id);
 
-    var xhr = new XMLHttpRequest();
+    let xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function () {
         if (xhr.readyState == 4) {
             if (xhr.status != 200) {
@@ -111,16 +111,4 @@ function addDevice() {
     xhr.send(data);
 
     console.log(data);
-}
-
-function truncateString(str, firstCharCount = str.length, endCharCount = 0, dotCount = 3) {
-    if (str.length <= firstCharCount + endCharCount) {
-        return str; // No truncation needed
-    }
-
-    const firstPortion = str.slice(0, firstCharCount);
-    const endPortion = str.slice(-endCharCount);
-    const dots = '.'.repeat(dotCount);
-
-    return `${firstPortion}${dots}${endPortion}`;
 }
