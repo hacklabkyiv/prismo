@@ -21,10 +21,11 @@ from models.user import User
 from models.access_log import AccessLog
 
 from api.web_api import web_api
+from api.device_api import device_api
 
 app = Flask(__name__)
 app.register_blueprint(web_api)
-
+app.register_blueprint(device_api)
 
 
 app.config["SECRET_KEY"] = "secret_key"

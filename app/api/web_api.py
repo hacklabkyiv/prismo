@@ -22,6 +22,42 @@ def api_get_logs():
 def api_get_user_permissions():
     return jsonify(User.get_permissions())
 
+
+@web_api.route("/api/users", methods=["POST"])
+def api_add_user():
+    user_data = request.get_json()
+
+    user = User(user_data["name"], user_data["key"], user_data.get("slack_id"))
+
+    user.save()
+
+    return jsonify({"message": "User added successfully"})
+
+
+@web_api.route("/api/users/<user_key>", methods=["DELETE"])
+def api_delete_user(user_key):
+    user = User(key=user_key, name=None)
+    user.delete()
+
+    return jsonify({"message": "User deleted successfully"})
+
+
+@web_api.route("/api/users/<user_key>/devices/<device_id>", methods=["POST"])
+def api_add_user_permission(user_key, device_id):
+    user = User(key=user_key, name=None)
+    user.add_permission(device_id)
+
+    return jsonify({"message": "User permission added successfully"})
+
+
+@web_api.route("/api/users/<user_key>/devices/<device_id>", methods=["DELETE"])
+def api_remove_user_permission(user_key, device_id):
+    user = User(key=user_key, name=None)
+    user.remove_permission(device_id)
+
+    return jsonify({"message": "User permission removed successfully"})
+
+
 # websocket = Sock(app)
 # @websocket.route('/updater_socket')
 # def updater(websocket):

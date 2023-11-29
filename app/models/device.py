@@ -37,6 +37,34 @@ class Device:
         return result_dicts
 
     @classmethod
+    def get_authorized_users(cls, device_id):
+        """
+        Retrieves the list of authorized users for a specific device.
+        
+        Args:
+            device_id (int): The ID of the device to check permissions for.
+        
+        Returns:
+            list: A list of user keys authorized to access the specified device.
+        """
+
+        # Connect to the SQLite database
+        conn = sqlite3.connect("database.db")
+        cursor = conn.cursor()
+
+        # Fetch authorized users for the given device
+        cursor.execute(
+            "SELECT users.key FROM users INNER JOIN permissions ON users.key = permissions.user_key WHERE permissions.device_id = ?",
+            (device_id,),
+        )
+        authorized_users = [row[0] for row in cursor.fetchall()]
+
+        # Close the database connection
+        conn.close()
+
+        return authorized_users
+
+    @classmethod
     def get_devices_ids_and_names(cls):
         # ""Fetches all device ids and names
 

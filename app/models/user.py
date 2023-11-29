@@ -2,7 +2,7 @@ import sqlite3
 
 
 class User:
-    def __init__(self, name, key, slack_id):
+    def __init__(self, name, key, slack_id=None):
         self.name = name
         self.key = key
         self.slack_id = slack_id
@@ -18,15 +18,65 @@ class User:
         else:
             return None
 
+    def save(self):
+        # Connect to the database
+        conn = sqlite3.connect("database.db")
+        cursor = conn.cursor()
+
+        # Check if user already exists
+        cursor.execute("SELECT * FROM users WHERE key = ?", (self.key,))
+        existing_user = cursor.fetchone()
+
+        if existing_user:
+            # Update existing user data
+            cursor.execute(
+                "UPDATE users SET name = ?, slack_id = ? WHERE key = ?",
+                (self.name, self.slack_id, self.key),
+            )
+        else:
+            # Create new user
+            cursor.execute(
+                "INSERT INTO users (name, key, slack_id) VALUES (?, ?, ?)",
+                (self.name, self.key, self.slack_id),
+            )
+            conn.commit()
+
+        # Close the connection
+        conn.close()
+
+    def delete(self):
+        # Connect to the database
+        conn = sqlite3.connect("database.db")
+        cursor = conn.cursor()
+
+        # Delete user from users table
+        cursor.execute("DELETE FROM users WHERE key = ?", (self.key,))
+        conn.commit()
+
+        # Delete user permissions from permissions table
+        cursor.execute("DELETE FROM permissions WHERE user_key = ?", (self.key,))
+        conn.commit()
+
+        # Close the connection
+        conn.close()
+
     @classmethod
-    def get_permissions(cls):
+    def get_permissions(cls, user_key=None):
         # Connect to the SQLite database
         conn = sqlite3.connect("database.db")
         cursor = conn.cursor()
 
         # Fetch user data and permissions
         user_data = []
-        cursor.execute("SELECT users.name, users.key FROM users")
+        # Filter by user_key if provided
+        if user_key:
+            cursor.execute(
+                "SELECT users.name, users.key FROM users WHERE users.key = ?",
+                (user_key,),
+            )
+        else:
+            cursor.execute("SELECT users.name, users.key FROM users")
+
         for row in cursor.fetchall():
             user_name = row[0]
             user_key = row[1]
@@ -88,26 +138,46 @@ class User:
         else:
             return False
 
-    def add_permission_for_device(self, device_id):
-        connection = sqlite3.connect("database.db")
-        cursor = connection.cursor()
-        cursor.execute(
-            """
-            INSERT INTO permissions (user_key, device_id)
-            VALUES (?, ?)
-        """,
-            (self.key, device_id),
-        )
-        connection.commit()
-        connection.close()
+    def add_permission(self, device_id):
+        # Connect to the database
+        conn = sqlite3.connect("database.db")
+        cursor = conn.cursor()
 
-    def remove_permission_for_device(self, device_id):
-        connection = sqlite3.connect("database.db")
-        cursor = connection.cursor()
-        cursor.execute(
-            "DELETE FROM permissions WHERE user_key = ? AND device_id = ?",
-            (self.key, device_id),
-        )
-        connection.commit()
-        connection.close()
+        # Check if device exists
+        cursor.execute("SELECT * FROM devices WHERE id = ?", (device_id,))
+        device = cursor.fetchone()
 
+        if not device:
+            raise ValueError(f"Device with ID {device_id} does not exist")
+
+        # Add device permission for user
+        cursor.execute(
+            "INSERT INTO permissions (device_id, user_key) VALUES (?, ?)",
+            (device_id, self.key),
+        )
+        conn.commit()
+
+        # Close the connection
+        conn.close()
+
+    def remove_permission(self, device_id):
+        # Connect to the database
+        conn = sqlite3.connect("database.db")
+        cursor = conn.cursor()
+
+        # Check if device exists
+        cursor.execute("SELECT * FROM devices WHERE id = ?", (device_id,))
+        device = cursor.fetchone()
+
+        if not device:
+            raise ValueError(f"Device with ID {device_id} does not exist")
+
+        # Remove device permission from user
+        cursor.execute(
+            "DELETE FROM permissions WHERE device_id = ? AND user_key = ?",
+            (device_id, self.key),
+        )
+        conn.commit()
+
+        # Close the connection
+        conn.close()

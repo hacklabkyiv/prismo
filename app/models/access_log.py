@@ -9,6 +9,20 @@ class AccessLog:
         self.operation_time = operation_time
 
     @classmethod
+    def add(cls, device_id, user_key, operation):
+        """Add log entry to database
+
+        Args:
+            device (dict): A dictionary containing the device data.
+        """
+        connection = sqlite3.connect("database.db")
+        cursor = connection.cursor()
+        cursor.execute("INSERT INTO event_logs(device_id, user_key, operation_type) VALUES (?, ?, ?)",
+        (device_id, user_key, operation),
+        )
+        connection.commit()
+        connection.close()
+    @classmethod
     def get_full_log(cls, start_time=None, end_time=None, limit=100, offset=0):
         """
         Retrieve event logs from a SQLite database within a specified time range and limit the number
