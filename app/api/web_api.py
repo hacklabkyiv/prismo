@@ -3,10 +3,13 @@ from flask_sock import Sock
 
 from models.access_log import AccessLog
 from models.user import User
+from models.device import Device
 
 web_api = Blueprint("web_api", __name__)
 
-
+"""
+Logs API
+"""
 @web_api.route("/api/logs", methods=["GET"])
 def api_get_logs():
     # Retrieve parameters from the query string
@@ -17,6 +20,45 @@ def api_get_logs():
 
     return jsonify(AccessLog.get_full_log(start_time, end_time, limit, offset))
 
+"""
+Devices API
+"""
+@web_api.route("/api/devices/latest_key", methods=["GET"])
+def api_get_latest_key():
+    return jsonify(Device.get_latest_key())
+@web_api.route("/api/devices", methods=["GET"])
+def api_get_devices():
+    return jsonify(Device.get_all_devices())
+
+@web_api.route("/api/devices", methods=["POST"])
+def api_add_device():
+    device_data = request.get_json()
+    device = Device(device_data["device_id"], device_data["device_type"], device_data.get("name"))
+    device.save()
+
+    return jsonify({"message": "Device added successfully"})
+
+
+@web_api.route("/api/devices/<device_id>", methods=["PUT"])
+def api_update_device(device_id):
+    device_data = request.get_json()
+
+    device = Device(device_id=device_id, device_type=None, name=None)
+    device.update_device(device_data.get("device_type", None), device_data.get("name", None))
+
+    return jsonify({"message": "Device updated successfully"})
+
+
+@web_api.route("/api/devices/<device_id>", methods=["DELETE"])
+def api_remove_device(device_id):
+    device = Device(device_id=device_id, device_type=None, name=None)
+    device.delete()
+
+    return jsonify({"message": "Device removed successfully"})
+
+"""
+Users API
+"""
 
 @web_api.route("/api/users", methods=["GET"])
 def api_get_user_permissions():

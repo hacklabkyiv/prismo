@@ -161,8 +161,7 @@ def users():
 @app.route("/devices")
 @login_required
 def devices():
-    devices = Device.get_all_devices()
-    return render_template("prismo/devices.html", devices=devices)
+    return render_template("prismo/devices.html")
 
 
 @app.route("/logs")

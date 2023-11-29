@@ -4,7 +4,7 @@ import sqlite3
 class Device:
     """Represents a device in the database."""
 
-    def __init__(self, device_id, name, device_type, slack_channel_id):
+    def __init__(self, device_id, name, device_type, slack_channel_id=None):
         """Initializes a new device instance.
 
         Args:
@@ -85,22 +85,25 @@ class Device:
 
         return device_dict
 
-    @classmethod
-    def save(cls, device):
-        """Saves a device to the database.
-
-        Args:
-            device (dict): A dictionary containing the device data.
-        """
+    def save(self):
         connection = sqlite3.connect("database.db")
         cursor = connection.cursor()
-        cursor.execute(
-            """
-            INSERT INTO devices (id, name, type, slack_channel_id)
-            VALUES (?, ?, ?, ?)
-        """,
-            (device["id"], device["name"], device["type"], device["slack_channel_id"]),
-        )
+
+        cursor.execute("INSERT INTO devices (id, name, type, slack_channel_id) VALUES (?, ?, ?, ?)",
+                       (self.device_id, self.name, self.device_type, self.slack_channel_id))
+        connection.commit()
+        connection.close()
+
+    def update_device(self, new_device_type, new_name):
+        connection = sqlite3.connect("database.db")
+        cursor = connection.cursor()
+
+        if new_device_type is not None:
+            cursor.execute("UPDATE devices SET type = ? WHERE id = ?", (new_device_type, self.device_id))
+
+        if new_name is not None:
+            cursor.execute("UPDATE devices SET name = ? WHERE id = ?", (new_name, self.device_id))
+
         connection.commit()
         connection.close()
 
