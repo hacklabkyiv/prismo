@@ -1,32 +1,24 @@
+import logging
+from logging.handlers import RotatingFileHandler
+
+from flask import Flask, render_template, request, redirect, url_for
 from flask_login import (
     LoginManager,
-    UserMixin,
     login_user,
     logout_user,
     login_required,
     current_user,
 )
 
-from flask import Flask, render_template, jsonify, request, redirect, url_for
-
-import logging
-import threading
-import time
-from logging.handlers import RotatingFileHandler
-
-
+from api.device_api import device_api
+from api.web_api import web_api
+from models.admin_user import AdminUser
 # New
 from models.device import Device
-from models.user import User
-from models.access_log import AccessLog
-
-from api.web_api import web_api
-from api.device_api import device_api
 
 app = Flask(__name__)
 app.register_blueprint(web_api)
 app.register_blueprint(device_api)
-
 
 app.config["SECRET_KEY"] = "secret_key"
 logger = logging.getLogger(__name__)
@@ -48,6 +40,7 @@ log_handler = RotatingFileHandler(
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 log_handler.setFormatter(formatter)
 logger.addHandler(log_handler)
+
 
 # noinspection PyBroadException
 # @login_manager.user_loader
@@ -74,22 +67,9 @@ logger.addHandler(log_handler)
 # Admin routes
 
 
-class User(UserMixin):
-    def __init__(self, username, password):
-        self.username = ""
-        self.password = ""
-        self.id = 1
-
-    def check_password(self, password):
-        return True
-
-    def is_authenticated(self):
-        return True
-
-
 @login_manager.user_loader
 def load_user(user_id):
-    return User("", "")
+    return AdminUser("", "")
 
 
 @app.route("/init_app", methods=["GET", "POST"])
@@ -99,15 +79,16 @@ def init_app_route():
 
     username = request.form["username"]
     password = request.form["password"]
-    slat = request.form["slat"]
-    if "file" in request.files:
-        file = request.files["file"]
-    else:
-        file = None
+    AdminUser(username, password).create_user()
+
+    # if "file" in request.files:
+    #    file = request.files["file"]
+    # else:
+    #    file = None
 
     # init_app(username, password, slat, file)
 
-    return redirect(url_for("admin.login"))
+    return redirect(url_for("login"))
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -121,7 +102,7 @@ def login():
     username = request.form["username"]
     password = request.form["password"]
 
-    user = User(username, password)
+    user = AdminUser(username)
     if user is None or not user.check_password(password):
         return render_template("auth/login.html", error="Invalid username or password")
 
@@ -132,7 +113,7 @@ def login():
 @app.route("/logout")
 def logout():
     logout_user()
-    return redirect(url_for("admin.login"))
+    return redirect(url_for("login"))
 
 
 # App routes
@@ -150,7 +131,6 @@ def index():
 @app.route("/users", methods=["GET"])
 @login_required
 def users():
-
     # Latest triggered key is used for new users registration.
     latest_triggered_key = Device.get_latest_key()
     logger.info("Latest triggered key: %s", latest_triggered_key)
