@@ -132,18 +132,26 @@ class Device:
         Get last triggered key, to add new users by clicking on any reader
         """
         connection = sqlite3.connect(app.config["DATABASE_URI"])
+        connection.row_factory = sqlite3.Row
+        # This query returns extended info about latest key event (user_key, operation_time, device_name, user_name)
+        query = """
+            SELECT el.user_key, el.operation_time, d.name AS device_name, u.name AS user_name
+            FROM event_logs el
+            INNER JOIN devices d ON el.device_id = d.id
+            INNER JOIN users u ON el.user_key = u.key
+            WHERE el.user_key IS NOT NULL AND el.operation_type = 'deny_access'
+            ORDER BY el.operation_time DESC
+            LIMIT 1
+        """
         rows = (
             connection.cursor()
-            .execute(
-                "SELECT user_key "
-                "FROM event_logs "
-                "WHERE user_key IS NOT NULL AND operation_type = 'deny_access' "
-                "ORDER BY operation_time DESC LIMIT 1"
-            )
+            .execute(query)
             .fetchone()
         )
         connection.close()
+
         if rows is None:
             return None
+        result_dict = dict(rows)
 
-        return rows[0]
+        return result_dict
