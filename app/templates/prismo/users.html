@@ -20,9 +20,9 @@
 </div>
 
 <script>
-  async function deleteUser(deviceId) {
+  async function deleteUser(userKey) {
     try {
-      const response = await fetch(`/api/devices/${deviceId}`, { method: 'DELETE' });
+      const response = await fetch(`/api/users/${userKey}`, { method: 'DELETE' });
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
