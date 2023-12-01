@@ -1,5 +1,5 @@
 import sqlite3
-
+from flask import current_app as app
 
 class User:
     def __init__(self, name, key, slack_id=None):
@@ -9,7 +9,7 @@ class User:
 
     @classmethod
     def get_by_key(cls, key):
-        connection = sqlite3.connect("database.db")
+        connection = sqlite3.connect(app.config["DATABASE_URI"])
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM users WHERE key = ?", (key,))
         result = cursor.fetchone()
@@ -20,7 +20,7 @@ class User:
 
     def save(self):
         # Connect to the database
-        conn = sqlite3.connect("database.db")
+        conn = sqlite3.connect(app.config["DATABASE_URI"])
         cursor = conn.cursor()
 
         # Check if user already exists
@@ -46,7 +46,7 @@ class User:
 
     def delete(self):
         # Connect to the database
-        conn = sqlite3.connect("database.db")
+        conn = sqlite3.connect(app.config["DATABASE_URI"])
         cursor = conn.cursor()
 
         # Delete user from users table
@@ -63,7 +63,7 @@ class User:
     @classmethod
     def get_permissions(cls, user_key=None):
         # Connect to the SQLite database
-        conn = sqlite3.connect("database.db")
+        conn = sqlite3.connect(app.config["DATABASE_URI"])
         cursor = conn.cursor()
 
         # Fetch user data and permissions
@@ -124,7 +124,7 @@ class User:
         return user_data
 
     def has_permission_for_device(self, device_id):
-        connection = sqlite3.connect("database.db")
+        connection = sqlite3.connect(app.config["DATABASE_URI"])
         cursor = connection.cursor()
         cursor.execute(
             """
@@ -140,7 +140,7 @@ class User:
 
     def add_permission(self, device_id):
         # Connect to the database
-        conn = sqlite3.connect("database.db")
+        conn = sqlite3.connect(app.config["DATABASE_URI"])
         cursor = conn.cursor()
 
         # Check if device exists
@@ -162,7 +162,7 @@ class User:
 
     def remove_permission(self, device_id):
         # Connect to the database
-        conn = sqlite3.connect("database.db")
+        conn = sqlite3.connect(app.config["DATABASE_URI"])
         cursor = conn.cursor()
 
         # Check if device exists

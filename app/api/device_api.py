@@ -13,7 +13,6 @@ device_api = Blueprint("device_api", __name__)
 @device_api.route("/devices/<device_id>/accesses/", methods=["GET"])
 def accesses(device_id):
     data = Device.get_authorized_users(device_id)
-    print(data)
     return {"keys": data}
 
 

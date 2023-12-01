@@ -13,59 +13,16 @@ from flask_login import (
 from api.device_api import device_api
 from api.web_api import web_api
 from models.admin_user import AdminUser
-# New
-from models.device import Device
 
 app = Flask(__name__)
 app.register_blueprint(web_api)
 app.register_blueprint(device_api)
 
 app.config["SECRET_KEY"] = "secret_key"
-logger = logging.getLogger(__name__)
+app.config["DATABASE_URI"] = "file:database.db"
 
 login_manager = LoginManager()
 login_manager.init_app(app)
-
-logging.basicConfig(level=logging.DEBUG)
-# Create logger to be able to use rolling logs
-logger.setLevel(logging.DEBUG)
-# log_handler = RotatingFileHandler(cfg['logging']['logfile'], mode='a',
-#                                  maxBytes=int(cfg['logging']['logsize_kb']) * 1024,
-#                                  backupCount=int(cfg['logging']['rolldepth']),
-#                                  delay=0)
-
-log_handler = RotatingFileHandler(
-    "log.txt", mode="a", maxBytes=100 * 1024, backupCount=int(5), delay=0
-)
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-log_handler.setFormatter(formatter)
-logger.addHandler(log_handler)
-
-
-# noinspection PyBroadException
-# @login_manager.user_loader
-# def loader_user(user_id):
-#    # pylint: disable=broad-exception-caught
-#    try:
-#        return get_flask_admin_user_by_id(user_id)
-#    except Exception:
-#        return None
-
-
-# noinspection PyBroadException
-# @login_manager.request_loader
-# def request_loader(request):
-#    # pylint: disable=broad-exception-caught
-#    username = request.form.get('username')
-#    try:
-#        print(f"user name: {username}")
-#        return get_flask_admin_user_by_user_name(username)
-#    except Exception:
-#        print(f"none: {username}")
-#        return None
-
-# Admin routes
-
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -104,14 +61,17 @@ def login():
 
     user = AdminUser(username)
     if user is None or not user.check_password(password):
+        app.logger.error("Auth failed: Invalid username or password")
         return render_template("auth/login.html", error="Invalid username or password")
 
+    app.logger.info("Auth success: %s", username)
     login_user(user)
     return redirect(url_for("users"))
 
 
 @app.route("/logout")
 def logout():
+    app.logger.info("Logout: %s", current_user.username)
     logout_user()
     return redirect(url_for("login"))
 
@@ -131,11 +91,7 @@ def index():
 @app.route("/users", methods=["GET"])
 @login_required
 def users():
-    # Latest triggered key is used for new users registration.
-    latest_triggered_key = Device.get_latest_key()
-    logger.info("Latest triggered key: %s", latest_triggered_key)
-
-    return render_template("prismo/users.html", latest_key=latest_triggered_key)
+    return render_template("prismo/users.html")
 
 
 @app.route("/devices")
@@ -153,25 +109,4 @@ def logs():
 @app.route("/settings", methods=["GET", "POST"])
 @login_required
 def settings():
-    """
-    if request.method == 'POST':
-        slack_token = request.form.get('slack_token')
-        channel_id = request.form.get('channel_id')
-
-        if slack_token is not None:
-            set_setting(key_slack_token, slack_token)
-
-        if channel_id is not None:
-            set_setting(key_slack_backup_channel, channel_id)
-
-    settings = {}
-    saved_slack_token = get_setting(key_slack_token)
-
-    if saved_slack_token is not None:
-        settings['slack_token'] = get_setting(key_slack_token)
-
-    saved_channel_id = get_setting(key_slack_backup_channel)
-    if saved_channel_id is not None:
-        settings['channel_id'] = get_setting(key_slack_backup_channel)
-    """
-    return render_template("prismo/settings.html", settings=settings)
+    return render_template("prismo/settings.html")

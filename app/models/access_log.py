@@ -1,5 +1,5 @@
 import sqlite3
-
+from flask import current_app as app
 
 class AccessLog:
     def __init__(self, device_id, user_key, operation_type, operation_time):
@@ -15,7 +15,7 @@ class AccessLog:
         Args:
             device (dict): A dictionary containing the device data.
         """
-        connection = sqlite3.connect("database.db")
+        connection = sqlite3.connect(app.config["DATABASE_URI"])
         cursor = connection.cursor()
         cursor.execute("INSERT INTO event_logs(device_id, user_key, operation_type) VALUES (?, ?, ?)",
         (device_id, user_key, operation),
@@ -53,7 +53,7 @@ class AccessLog:
             logs = query_event_logs(start_time='2023-01-01 00:00:00', end_time='2023-01-31 23:59:59',
             limit=50)
         """
-        connection = sqlite3.connect("database.db")
+        connection = sqlite3.connect(app.config["DATABASE_URI"])
         connection.row_factory = sqlite3.Row
         cursor = connection.cursor()
 

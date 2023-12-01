@@ -1,5 +1,5 @@
 import sqlite3
-
+from flask import current_app as app
 
 class Device:
     """Represents a device in the database."""
@@ -25,7 +25,7 @@ class Device:
         Returns:
             List[dict]: A list of dictionaries representing the devices.
         """
-        connection = sqlite3.connect("database.db")
+        connection = sqlite3.connect(app.config["DATABASE_URI"])
         connection.row_factory = sqlite3.Row
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM devices")
@@ -49,7 +49,7 @@ class Device:
         """
 
         # Connect to the SQLite database
-        conn = sqlite3.connect("database.db")
+        conn = sqlite3.connect(app.config["DATABASE_URI"])
         cursor = conn.cursor()
 
         # Fetch authorized users for the given device
@@ -71,7 +71,7 @@ class Device:
         # Returns:
         #    List: A list of string of device names representing the devices.
         # "
-        connection = sqlite3.connect("database.db")
+        connection = sqlite3.connect(app.config["DATABASE_URI"])
         connection.row_factory = sqlite3.Row
         cursor = connection.cursor()
         cursor.execute("SELECT id, name FROM devices")
@@ -86,7 +86,7 @@ class Device:
         return device_dict
 
     def save(self):
-        connection = sqlite3.connect("database.db")
+        connection = sqlite3.connect(app.config["DATABASE_URI"])
         cursor = connection.cursor()
 
         cursor.execute("INSERT INTO devices (id, name, type, slack_channel_id) VALUES (?, ?, ?, ?)",
@@ -95,7 +95,7 @@ class Device:
         connection.close()
 
     def update_device(self, new_device_type, new_name):
-        connection = sqlite3.connect("database.db")
+        connection = sqlite3.connect(app.config["DATABASE_URI"])
         cursor = connection.cursor()
 
         if new_device_type is not None:
@@ -117,7 +117,7 @@ class Device:
         Returns:
             Device: The device with the specified ID, or None if not found.
         """
-        connection = sqlite3.connect("database.db")
+        connection = sqlite3.connect(app.config["DATABASE_URI"])
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM devices WHERE id = ?", (device_id,))
         result = cursor.fetchone()
@@ -131,7 +131,7 @@ class Device:
         """
         Get last triggered key, to add new users by clicking on any reader
         """
-        connection = sqlite3.connect("database.db")
+        connection = sqlite3.connect(app.config["DATABASE_URI"])
         rows = (
             connection.cursor()
             .execute(

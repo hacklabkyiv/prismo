@@ -2,7 +2,7 @@ import sqlite3
 
 import argon2
 from flask_login import UserMixin
-
+from flask import current_app as app
 
 class AdminUser(UserMixin):
     def __init__(self, username, password=None):
@@ -12,24 +12,24 @@ class AdminUser(UserMixin):
         self.id = 1
 
     def check_password(self, password):
-        connection = sqlite3.connect("database.db")
+        connection = sqlite3.connect(app.config["DATABASE_URI"])
         cursor = connection.cursor()
 
         cursor.execute("SELECT password FROM admins WHERE username = ?", (self.username,))
         result = cursor.fetchone()
         connection.close()
         if not result:
-            print("USERNAME IS NOT FOUND")
+            app.logger.warning(f"Username not found")
             return False
         try:
-            print("Verify hash result:", argon2.PasswordHasher().verify(result[0], password))
+            app.logger.info(f"Verify hash result:", argon2.PasswordHasher().verify(result[0], password))
             return True
         except argon2.exceptions.VerifyMismatchError:
-            print("PASSWORD IS INCORRECT")
+            app.logger.warning("Wrong password")
             return False
 
     def create_user(self):
-        connection = sqlite3.connect("database.db")
+        connection = sqlite3.connect(app.config["DATABASE_URI"])
         cursor = connection.cursor()
         cursor.execute("INSERT OR REPLACE INTO admins (id, username, password) VALUES (1, ?, ?)",
                        (self.username, self.hashed_password))
