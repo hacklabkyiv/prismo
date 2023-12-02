@@ -1,0 +1,24 @@
+{
+   "DEBUG":false,
+   "TESTING":false,
+   "SECRET_KEY":"secret_key",
+   "USE_X_SENDFILE":false,
+   "APPLICATION_ROOT":"/",
+   "SESSION_COOKIE_NAME":"session",
+   "SESSION_COOKIE_HTTPONLY":true,
+   "SESSION_COOKIE_SECURE":false,
+   "SESSION_REFRESH_EACH_REQUEST":true,
+   "TRAP_HTTP_EXCEPTIONS":false,
+   "EXPLAIN_TEMPLATE_LOADING":false,
+   "PREFERRED_URL_SCHEME":"http",
+   "MAX_COOKIE_SIZE":4093,
+   "DATABASE_URI":"file:database.db",
+   "PRISMO":{
+      "CURRENT_CONFIG_FILE": "config_debug.json",
+      "NOTIFIER":{
+         "CURRENT_NOTIFIER":"SLACK",
+         "SLACK_TOKEN":"this-is-not-real-slack-token",
+         "SLACK_CHANNEL":"prismo-debug"
+      }
+   }
+}

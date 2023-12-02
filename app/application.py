@@ -1,5 +1,4 @@
-import logging
-from logging.handlers import RotatingFileHandler
+import json
 
 from flask import Flask, render_template, request, redirect, url_for
 from flask_login import (
@@ -18,11 +17,11 @@ app = Flask(__name__)
 app.register_blueprint(web_api)
 app.register_blueprint(device_api)
 
-app.config["SECRET_KEY"] = "secret_key"
-app.config["DATABASE_URI"] = "file:database.db"
+app.config.from_file("config_debug.json", load=json.load)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
+
 
 @login_manager.user_loader
 def load_user(user_id):
