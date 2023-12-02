@@ -2,7 +2,7 @@ Flask~=2.3.2
 pyyaml~=6.0
 requests
 slack_sdk
-Werkzeug==2.3.7
+Werkzeug==2.3.8
 flask-sock
 flask-login
 schedule
