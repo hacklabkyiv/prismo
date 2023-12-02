@@ -82,9 +82,11 @@ def api_add_user():
 
     user = User(user_data["name"], user_data["key"], user_data.get("slack_id"))
 
-    user.save()
-
-    return jsonify({"message": "User added successfully"})
+    number_of_new_user_added = user.save()
+    if number_of_new_user_added == 1:
+        return jsonify({"message": "User added successfully"}), 201
+    if number_of_new_user_added == 0:
+        return jsonify({"message": "User already exists"}), 303
 
 
 @web_api.route("/api/users/<user_key>", methods=["DELETE"])

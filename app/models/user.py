@@ -19,6 +19,9 @@ class User:
             return None
 
     def save(self):
+        """
+        Returns number of new user added
+        """
         # Connect to the database
         conn = sqlite3.connect(app.config["DATABASE_URI"])
         cursor = conn.cursor()
@@ -26,7 +29,7 @@ class User:
         # Check if user already exists
         cursor.execute("SELECT * FROM users WHERE key = ?", (self.key,))
         existing_user = cursor.fetchone()
-
+        number_of_new_user = 0
         if existing_user:
             # Update existing user data
             cursor.execute(
@@ -39,10 +42,12 @@ class User:
                 "INSERT INTO users (name, key, slack_id) VALUES (?, ?, ?)",
                 (self.name, self.key, self.slack_id),
             )
+            number_of_new_user = 1
             conn.commit()
 
         # Close the connection
         conn.close()
+        return number_of_new_user
 
     def delete(self):
         # Connect to the database
