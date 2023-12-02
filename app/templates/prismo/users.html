@@ -20,7 +20,7 @@
 
 
 <script>
-  let myTable
+  let usersTable
   let latestKey
 
   async function getLatestKey() {
@@ -48,12 +48,13 @@
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      console.log('User successfully added')
-      myTable.row.add({
-        name,
-        key,
-        operation: '<button class="btn btn-sm btn-danger" onclick="deleteUser(\'' + key + '\')">Delete</button>'
-      }).draw()
+      // usersTable.row.add({
+      //   name,
+      //   key,
+      //   operation: '<button class="btn btn-sm btn-danger" onclick="deleteUser(\'' + key + '\')">Delete</button>'
+      // }).draw()
+      const newData = await fetchData()
+      usersTable.clear().rows.add( newData ).draw()
     } catch (error) {
       console.error('Error:', error)
     }
@@ -65,8 +66,8 @@
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
-      const getRow = () => $('#myTable').find(`tr[data-key="${userKey}"]`)
-      myTable.row(getRow).remove().draw()
+      const getRow = () => $('#usersTable').find(`tr[data-key="${userKey}"]`)
+      usersTable.row(getRow).remove().draw()
       console.log('Device successfully deleted')
     } catch (error) {
       console.error('Error:', error)
@@ -119,7 +120,7 @@
     return Object.keys(data[0]).map(key => ({
       data: (row) => {
         const value = row[key]
-        return typeof value === 'string' ? value : `<input type="checkbox" ${value?.allowed && "checked"} onchange="updatePermissions(${row.key}, '${value?.device_id}', ${value?.allowed})">`
+        return typeof value === 'string' ? value : `<input type="checkbox" ${value?.allowed && "checked"} onchange="updatePermissions('${row.key}', '${value?.device_id}', ${value?.allowed})">`
       },
       visible: key !== 'key',
       title: key.charAt(0).toUpperCase() + key.slice(1)
@@ -130,7 +131,7 @@
     const data = await fetchData()
     const columns = getColumns(data)
 
-    myTable = $('#userTable').DataTable({
+    usersTable = $('#userTable').DataTable({
       data,
       createdRow: (row, data, dataIndex) => {
         $(row).attr('data-key', data.key)
