@@ -10,7 +10,7 @@
 <body>
 <div class="login-container">
     <h2>Login</h2>
-    <form class="login-form" action="#" method="post">
+    <form id="loginForm" class="login-form" action="#" method="post">
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" required>
 
@@ -21,6 +21,16 @@
     </form>
 </div>
 </body>
+
+<script>
+    document.getElementById('loginForm').addEventListener('submit', function(event) {
+    console.log('loginForm submitted')
+
+    let username = document.getElementById('username').value
+
+    sessionStorage.setItem('username', username)
+    })
+</script>
 </html>
 
 {% endblock %}

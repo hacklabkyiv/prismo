@@ -49,7 +49,7 @@
                 <div class="dropdown py-sm-4 mt-sm-auto ms-auto ms-sm-0">
                     <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-person-circle" class="rounded-circle"></i>
-                        <span class="d-none d-sm-inline mx-1">{{ current_user }}</span>
+                        <span id="username" class="d-none d-sm-inline mx-1"></span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
                         <li><a class="dropdown-item" href="/logout">Sign out</a></li>
@@ -70,8 +70,10 @@
     $(document).ready(function () {
         $('#tblData').dataTable({
             paging: false,
-        });
-    });
+        })
+    })
+    let username = sessionStorage.getItem('username')
+    document.getElementById('username').textContent = username
 </script>
 </body>
 

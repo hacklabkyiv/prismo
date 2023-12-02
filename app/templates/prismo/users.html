@@ -5,9 +5,8 @@
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">Add last used RFID card as new user</h5>
-                <p class="card-text">Card: <strong>{{ latest_key[:8] + "..." + latest_key[-8:]}}</strong> was triggered at: <strong>20:57AM</strong></p>
                 <div class="input-group mb-3">
-                    <button class="btn btn-primary" type="submit" onclick="addUser('{{ latest_key }}', document.getElementById('user_name').value)" ><i class="bi bi-person-add"></i> Add User</button>  
+                    <button class="btn btn-primary" type="submit" onclick="addUser(document.getElementById('user_name').value)" ><i class="bi bi-person-add"></i> Add User</button>  
                     <input type="text" class="form-control" id="user_name" placeholder="User Name">
                 </div>
             </div>
@@ -19,16 +18,58 @@
     </div>
 </div>
 
+
 <script>
-  async function deleteUser(userKey) {
+  let myTable
+  let latestKey
+
+  async function getLatestKey() {
     try {
-      const response = await fetch(`/api/users/${userKey}`, { method: 'DELETE' });
+      const response = await fetch('/api/devices/latest_key')
+      const data = await response.json()
+      console.log('data: ', data)
+      return data
+    } catch (error) {
+      console.error('Error:', error)
+    }
+  }
+ 
+  async function addUser(name) {
+    const key = latestKey.user_key
+    try {
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name, key })
+      })
+      console.log(response)
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      console.log('Device successfully deleted');
+      console.log('User successfully added')
+      myTable.row.add({
+        name,
+        key,
+        operation: '<button class="btn btn-sm btn-danger" onclick="deleteUser(\'' + key + '\')">Delete</button>'
+      }).draw()
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error:', error)
+    }
+  }
+
+  async function deleteUser(userKey) {
+    try {
+      const response = await fetch(`/api/users/${userKey}`, { method: 'DELETE' })
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const getRow = () => $('#myTable').find(`tr[data-key="${userKey}"]`)
+      myTable.row(getRow).remove().draw()
+      console.log('Device successfully deleted')
+    } catch (error) {
+      console.error('Error:', error)
     }
   }
 
@@ -36,7 +77,7 @@
     try {
       const response = await fetch('/api/users')
       const data = await response.json()
-      const tableData = data.map(user => {
+      return data.map(user => {
         return {
           name: user.user_name,
           key: user.user_key,
@@ -50,29 +91,57 @@
           operation: '<button class="btn btn-sm btn-danger" onclick="deleteUser(\'' + user.user_key + '\')">Delete</button>'
         }
       })
+    }
+    catch (error) {
+      console.error('Error:', error)
+    }
+  }
 
-      $('#userTable').DataTable({
-        data: tableData,
-        columns: Object.keys(tableData[0]).map(key => {
-          return {
-            data: (row) => {
-              const value = row[key]
-              return typeof value === 'string' ? value : `<input type="checkbox" ${value?.allowed && "checked"}>`
-            },
-            // Capitalize first letter of key
-            title: key.charAt(0).toUpperCase() + key.slice(1)
-          }
-        })
+  async function updatePermissions(userKey, deviceID, allowed) {
+    try {
+      const response = await fetch(`/api/users/${userKey}/devices/${deviceID}`, {
+        method: allowed ? 'DELETE' : 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ device_id: deviceID, user_key: userKey })
       })
-
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      console.log('Permissions successfully updated')
     } catch (error) {
       console.error('Error:', error)
     }
   }
 
-$(document).ready(function() {
-  fetchData()
- })
+  const getColumns = (data) => {
+    return Object.keys(data[0]).map(key => ({
+      data: (row) => {
+        const value = row[key]
+        return typeof value === 'string' ? value : `<input type="checkbox" ${value?.allowed && "checked"} onchange="updatePermissions(${row.key}, '${value?.device_id}', ${value?.allowed})">`
+      },
+      visible: key !== 'key',
+      title: key.charAt(0).toUpperCase() + key.slice(1)
+    }))
+  }
+
+  async function initializeDataTable() {
+    const data = await fetchData()
+    const columns = getColumns(data)
+
+    myTable = $('#userTable').DataTable({
+      data,
+      createdRow: (row, data, dataIndex) => {
+        $(row).attr('data-key', data.key)
+      },
+      columns: columns
+    })
+
+    latestKey = await getLatestKey()
+  }
+
+initializeDataTable()
 </script>
 
 {% endblock %}

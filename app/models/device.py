@@ -135,10 +135,9 @@ class Device:
         connection.row_factory = sqlite3.Row
         # This query returns extended info about latest key event (user_key, operation_time, device_name, user_name)
         query = """
-            SELECT el.user_key, el.operation_time, d.name AS device_name, u.name AS user_name
+            SELECT el.user_key, el.operation_time, d.name AS device_name
             FROM event_logs el
             INNER JOIN devices d ON el.device_id = d.id
-            INNER JOIN users u ON el.user_key = u.key
             WHERE el.user_key IS NOT NULL AND el.operation_type = 'deny_access'
             ORDER BY el.operation_time DESC
             LIMIT 1
