@@ -25,7 +25,13 @@ Add docker to autostart:
 ```bash
 sudo systemctl enable docker
 ```
+
 The application ready to work and available on `http://localhost:5000`
+
+### The reader firmware
+
+The reader is a device which connected to the network and read RFID cards. The reader firmware is stored in
+the `prismo-reader` [repository](https://github.com/hacklabkyiv/prismo-reader/tree/micropython_pn532).
 
 ### Configuration
 
