@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="container-fluid px-md-5">
+    <div class="row">
+        <div class="form-group col-md-5 col-sm-12" data-step="2" data-intro="Add this new key here.">
+            <label for="email">Device name: </label>
+            <input type="text" class="form-control" id="device_id" placeholder="c32d8b45-92fe-44f6-8b61-42c2107dfe87">
+        </div>
+        <div class="form-group col-md-5 col-sm-12" data-step="3" data-intro="Fill the nickname">
+            <label for="pwd">Reader Name: </label>
+            <input type="text" class="form-control" id="device_name" placeholder="Device name, eg Lathe or Door">
+        </div>
+        <div class="col-md-2 col-sm-10 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary" onclick="addDevice()" data-step="4"
+                    data-intro="Finish addition">Add device
+            </button>
+        </div>
+    </div>
+    <h1 class="my-4">All devices</h1>
+    <div class="py-3">
+        <div style="float:left; width: 30%">
+            <ul>
+                {% for device in devices %}
+                <li><a href="/device/{{device.id}}">{{ device.name }}:{{device.id}}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div style="clear:both"></div>
+    </div>
+    <div class="py-3">
+        <div style="float:left; width: 30%">
+            <!-- Button trigger modal -->
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#flashDeviceModal">
+            Flash Connected Device
+            </button>
+            <!-- Modal -->
+            <div class="modal fade" id="flashDeviceModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable" role="document">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Flash Device</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="flashLog">
+                    ...
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="flashFirmware()">Flash Firmware</button>
+                </div>
+                </div>
+            </div>
+            </div>
+        </div>
+        <div style="clear:both"></div>
+    </div>
+
+</div>
+{% endblock %}

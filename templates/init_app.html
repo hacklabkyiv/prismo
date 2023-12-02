@@ -1,0 +1,50 @@
+{% block content %}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Form</title>
+    <link rel="stylesheet" href="/static/css/auth.css">
+</head>
+<body>
+<div class="login-container">
+    <h2>Create your admin user</h2>
+    <p>We suggest and highly recommend to create a strong password for your admin user</p>
+    <form class="login-form" action="#" method="post" enctype="multipart/form-data">
+        <label for="username">Admin username:</label>
+        <input type="text" id="username" name="username" required>
+
+        <label for="password">Admin Password:</label>
+        <input type="password" id="password" name="password" required>
+
+        <label for="slat">Slat, the secure string using for hash the admin password</label>
+        <label for="slat">We recommend to generate random string for the field, and keep it save</label>
+        <input type="text" id="slat" name="slat" required>
+
+        <input type="checkbox" id="toggleCheckbox">
+        <label for="toggleCheckbox">Restore from database backup</label>
+
+        <div id="contentToToggle">
+            <input type=file name=file>
+        </div>
+
+        <div>
+            <button type="submit">Init Prismo</button>
+        </div>
+    </form>
+</div>
+<script>
+    const toggleCheckbox = document.getElementById("toggleCheckbox");
+    const contentToToggle = document.getElementById("contentToToggle");
+
+    toggleCheckbox.addEventListener("change", function () {
+        console.log("test")
+        contentToToggle.style.display = this.checked ? "block" : "none";
+    });
+    contentToToggle.style.display = "none";
+</script>
+</body>
+</html>
+
+{% endblock %}

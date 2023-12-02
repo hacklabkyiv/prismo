@@ -1,170 +1,153 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
-"""
-Core of Hacklab Admin Panel
-
-@author: Artem Synytsyn
-"""
-
-from flask import Flask, render_template, request, abort
-import time
-import json
-import yaml
-import sys
-import os
 import logging
+import threading
+import time
 from logging.handlers import RotatingFileHandler
-from collections import namedtuple
-from threading import Thread
-from os.path import getmtime
-import datetime
-import psycopg2 as psycopg
-import requests
-import txt_log_reader
-try:
-    from yaml import CLoader as Loader, CDumper
-except ImportError:
-    from yaml import Loader
 
-# Configuration file
-CONFIG_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.cfg')
+import flask
+import flask_login
+import schedule
+from flask import Flask, render_template
+from flask_login import LoginManager
+from flask_sock import Sock
+from flask import jsonify, request
 
-# Initial setup
-try:
-    cfg = yaml.load(open(CONFIG_FILE, 'r'), Loader=Loader)
-except IOError as e:
-    logger.error("Config file not found!")
-    logger.error("Exception: %s" % str(e))
-    sys.exit(1)
+from app.config import cfg, UPLOAD_FOLDER, get_setting, key_secret_key, set_setting, \
+    create_internal_config_file
+from app.data.work_logs_repository import get_latest_key
+from app.features.admin.admin_routrers import admin_blue_print
+from app.features.admin.admins_repository import get_admin_user_by_flask_user, \
+    get_flask_admin_user_by_id, \
+    get_flask_admin_user_by_user_name
+from app.features.admin.init_app import database_file
+from app.features.backup_database import backup_data_base
+from app.features.permissions.access_pannel import get_access_control_panel
+from app.features.permissions.permission_routers import permissions_blue_print
+from app.features.readers.manage_device import manage_device_blue_print
+from app.features.readers.reader_routers import reader_blue_print
+from app.routers.settings_routers import settings_blue_print
+from app.features.users.user_routers import user_blue_print
+from app.utils.fimware_updater import update_firmware_full
 
-LATEST_KEY_FILE = cfg['data']['latest-key-file']
+from app.data.work_logs_repository import query_event_logs
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'secret!'
+
+create_internal_config_file()
+
+secret_key = get_setting(key_secret_key)
+
+app.config['SECRET_KEY'] = secret_key
+websocket = Sock(app)
 logger = logging.getLogger(__name__)
-if cfg['logging']['debug'] is True:
-    app.config['DEBUG'] = True
-    logging.basicConfig(level=logging.DEBUG)
-    # Create logger to be able to use rolling logs
-    logger.setLevel(logging.DEBUG)
-    log_handler = RotatingFileHandler(cfg['logging']['logfile'],mode='a',
-                                      maxBytes=int(cfg['logging']['logsize_kb'])*1024,
-                                      backupCount=int(cfg['logging']['rolldepth']),
-                                      delay=0)
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    log_handler.setFormatter(formatter)
-    logger.addHandler(log_handler)
 
-def get_latest_key_info():
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+logging.basicConfig(level=logging.DEBUG)
+# Create logger to be able to use rolling logs
+logger.setLevel(logging.DEBUG)
+log_handler = RotatingFileHandler(cfg['logging']['logfile'], mode='a',
+                                  maxBytes=int(cfg['logging']['logsize_kb']) * 1024,
+                                  backupCount=int(cfg['logging']['rolldepth']),
+                                  delay=0)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+log_handler.setFormatter(formatter)
+logger.addHandler(log_handler)
+
+app.register_blueprint(reader_blue_print)
+app.register_blueprint(permissions_blue_print)
+app.register_blueprint(user_blue_print)
+app.register_blueprint(admin_blue_print)
+app.register_blueprint(settings_blue_print)
+app.register_blueprint(manage_device_blue_print)
+
+
+def scheduler_thread():
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+
+
+schedule.every().day.at("22:17").do(backup_data_base)
+
+scheduler = threading.Thread(target=scheduler_thread)
+scheduler.daemon = True
+scheduler.start()
+
+
+# noinspection PyBroadException
+@login_manager.user_loader
+def loader_user(user_id):
+    # pylint: disable=broad-exception-caught
     try:
-        with open(LATEST_KEY_FILE, 'r') as f:
-            key_value = f.read()
-    except FileNotFoundError:
-        key_value = '<absent>'
-    # Getting modification datetime
+        return get_flask_admin_user_by_id(user_id)
+    except Exception:
+        return None
+
+
+# noinspection PyBroadException
+@login_manager.request_loader
+def request_loader(request):
+    # pylint: disable=broad-exception-caught
+    username = request.form.get('username')
     try:
-        mod_time = getmtime(LATEST_KEY_FILE)
-        mod_time_converted = datetime.datetime.fromtimestamp(
-                mod_time).strftime('%Y-%m-%d %H:%M:%S')
-    except OSError:
-        mod_time_converted = '<unknown>'
-    return ("%s updated at: %s" % (key_value, mod_time_converted))
+        print(f"user name: {username}")
+        return get_flask_admin_user_by_user_name(username)
+    except Exception:
+        print(f"none: {username}")
+        return None
 
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET'])
 def index():
-    try:
-        conn = psycopg.connect(user = cfg['data']['user'],
-                                  password = cfg['data']['password'],
-                                  host = cfg['data']['host'],
-                                  port = cfg['data']['port'],
-                                  database = cfg['data']['name'])
-    except (Exception, psycopg.DatabaseError) as error :
-        logger.error("Error while connecting to PostgreSQL: %s" % error)
-        abort(500)
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM users')
-    all_column_names = list(description[0] for description in
-                          cursor.description)
-
-    # Get column names for devices, needed access control. Exclude the others
-    access_info_columns = list(filter(lambda value: not value in ['id', 'name', 'key', 'last_enter'], all_column_names))
-    ordered_column_names = ['id', 'name', 'key', 'last_enter']
-    ordered_column_names.extend(access_info_columns)                   
-    
-    cursor.execute('SELECT id, name, key, last_enter FROM users')
-    user_info = cursor.fetchall()
-    cursor.execute('SELECT %s FROM users'
-                        % ','.join(access_info_columns))
-    user_access_info = cursor.fetchall()
-    template_data = zip(user_info, user_access_info)
-
-    # Updating latest key information
-    latest_key_info = get_latest_key_info()
-    # Parsing data from frontend: editing access, user additioin and deletion
-    if request.method == 'POST':
-        operation = request.form['operation']
-        if operation == 'edit':
-            user_id = request.form['id']
-            user_device = request.form['device']
-            user_state = request.form['state']
-            if user_state == 'true':
-                user_state = '1'
-            elif user_state == 'false':
-                user_state = '0'
-
-            logger.info('Updated user info: %s, %s, %s' % (user_id,
-                         access_info_columns[int(user_device)],
-                         user_state))
-            command = "UPDATE users SET %s = '%s' WHERE id = %s" \
-                % (access_info_columns[int(user_device)], user_state,
-                   user_id)
-            cursor.execute(command)
-            conn.commit()
-        elif operation == 'delete':
-            user_id = request.form['id']
-            user_device = request.form['device']
-            user_state = request.form['state']
-            cursor.execute('DELETE FROM users WHERE id=%s', (user_id, ))
-            conn.commit()
-            logger.info('User deleted, id: %s' % user_id)
-        elif operation == 'add':
-            user_name = request.form['nick']
-            user_key = request.form['key']
-            cursor.execute('INSERT INTO users(name, key) VALUES(%s, %s)',(user_name, user_key))
-            conn.commit()
-            logger.info('User added: %s, %s' % (user_name, user_key))
-    cursor.close()
-    conn.close()
-    return render_template('index.html', data=template_data,
-                           column_names=ordered_column_names,
-                           latest_key_info=latest_key_info)
-
-@app.route("/log_viewer")
-def log_reader_wrapper():
-    return txt_log_reader.render_logs_to_html()
+    if not database_file.is_file():
+        return flask.redirect(flask.url_for('admin.init_app_route'))
+    if flask_login.current_user.is_authenticated:
+        return flask.redirect(flask.url_for('access_panel'))
+    return flask.redirect(flask.url_for('admin.login'))
 
 
-@app.route('/log_view_2')
-def log_view_2():
-    try:
-        conn = psycopg.connect(user=cfg['data']['user'],
-                               password=cfg['data']['password'],
-                               host=cfg['data']['host'],
-                               port=cfg['data']['port'],
-                               database=cfg['data']['name'])
-    except (Exception, psycopg.DatabaseError) as error:
-        logger.error("Error while connecting to PostgreSQL: %s" % error)
-        abort(500)
-    cursor = conn.cursor()
+@app.route('/access_panel', methods=['GET'])
+def access_panel():
+    access_control_panel = get_access_control_panel()
+    latest_key = get_latest_key()
 
-    cursor.execute('select device_name, name, to_timestamp(time) from logs join users u on logs.key = u.key;')
+    user = get_admin_user_by_flask_user(flask_login.current_user)
+    if user is None:
+        current_username = "Anonymous"
+    else:
+        current_username = user.username
 
-    logs = cursor.fetchall()
+    logger.info('Access control panel data: %s', access_control_panel)
+    logger.info('Latest key: %s', latest_key)
 
-    print(logs)
+    return render_template("access_panel.html",
+                           latest_key=latest_key,
+                           access_control_panel=access_control_panel,
+                           current_user=current_username)
 
-    cursor.close()
-    conn.close()
-    return render_template('log_view_2.html', logs=logs)
+
+@app.route('/full_log_view')
+def full_log_view():
+    return render_template('full_log_view.html')
+
+
+# TODO all API calls, including API for readers move to separate module.
+@app.route('/api/logs', methods=['GET'])
+def api_get_logs():
+    # TODO: error handling, input data validation etc.
+    # Retrieve parameters from the query string
+    start_time = request.args.get('start_time', default=None)
+    end_time = request.args.get('end_time', default=None)
+    limit = request.args.get('limit', default=100, type=int)
+    offset = request.args.get('offset', default=0, type=int)
+
+    return jsonify(query_event_logs(start_time, end_time, limit, offset))
+
+
+@websocket.route('/updater_socket')
+def updater(websocket):
+    # pylint: disable=redefined-outer-name
+    update_firmware_full(websocket)

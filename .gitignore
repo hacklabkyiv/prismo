@@ -1,5 +1,7 @@
 # Project-specific files
-config.cfg
+external/
+log.txt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -151,4 +153,6 @@ out/
 .vscode/
 
 .fleet
+.DS_Store
+**/.DS_Store
 
