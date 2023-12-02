@@ -20,10 +20,9 @@ def accesses(device_id):
 
 @reader_blue_print.route("/<device_id>/log_operation", methods=["POST"])
 def log_operation(device_id):
-
     json_data = json.loads(request.get_json())
 
-    logging.info("Received request: " + str(json_data))
+    logging.info("Received request: %s", str(json_data))
 
     operation = json_data["operation"]
     if operation not in ["lock", "unlock", "deny_access"]:
