@@ -4,7 +4,7 @@
     <div class="row">
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">Add last used RFID card as new user</h5>
+                <h5 class="card-title">Add last used RFID card as new user: <span id="used-key-at"></span></h5>
                 <div class="input-group mb-3">
                     <button class="btn btn-primary" type="submit" onclick="addUser(document.getElementById('user_name').value)" ><i class="bi bi-person-add"></i> Add User</button>  
                     <input type="text" class="form-control" id="user_name" placeholder="User Name">
@@ -18,7 +18,6 @@
     </div>
 </div>
 
-
 <script>
   let usersTable
   let latestKey
@@ -27,7 +26,6 @@
     try {
       const response = await fetch('/api/devices/latest_key')
       const data = await response.json()
-      console.log('data: ', data)
       return data
     } catch (error) {
       console.error('Error:', error)
@@ -140,6 +138,7 @@
     })
 
     latestKey = await getLatestKey()
+    $('#used-key-at').text(latestKey.operation_time)
   }
 
 initializeDataTable()
