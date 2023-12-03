@@ -17,8 +17,8 @@
       "CURRENT_CONFIG_FILE": "config_debug.json",
       "NOTIFIER":{
          "CURRENT_NOTIFIER":"SLACK",
-         "SLACK_TOKEN":"this-is-not-real-slack-token",
-         "SLACK_CHANNEL":"prismo-debug"
+         "SLACK_TOKEN":"xoxb-NOT-a-real-token",
+         "SLACK_CHANNEL":"#prismo-debug"
       }
    }
 }

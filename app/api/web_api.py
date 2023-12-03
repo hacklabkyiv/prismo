@@ -165,7 +165,7 @@ def api_update_settings():
         try:
             with open(app.config["PRISMO"]["CURRENT_CONFIG_FILE"], "r") as f:
                 stored_settings = json.load(f)
-            with open("config.json", "w") as f:
+            with open(app.config["PRISMO"]["CURRENT_CONFIG_FILE"], "w") as f:
                 stored_settings[app.config["PRISMO"]["CURRENT_CONFIG_FILE"]] = settings
                 json.dump(stored_settings, f, indent=4)
         except Exception as e:

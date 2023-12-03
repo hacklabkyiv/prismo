@@ -8,12 +8,16 @@ from flask_login import (
     login_required,
     current_user,
 )
+from pyee.base import EventEmitter
 
 from api.device_api import device_api
 from api.web_api import web_api
 from models.admin_user import AdminUser
+from plugins.slack_notifier import SlackNotifierPlugin
 
 app = Flask(__name__)
+app.ee = EventEmitter()
+
 app.register_blueprint(web_api)
 app.register_blueprint(device_api)
 
@@ -21,6 +25,9 @@ app.config.from_file("config_debug.json", load=json.load)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
+
+# Plugins
+slack_notifier = SlackNotifierPlugin(app.app_context())
 
 
 @login_manager.user_loader
