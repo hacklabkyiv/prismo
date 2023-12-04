@@ -106,7 +106,8 @@ class SlackNotifierPlugin:
                 self.logger.info("Access log entry added")
                 self.logger.info("User name: %s", user_name)
                 self.logger.info("Device name: %s", device_name)
-                self.slack_app.client.chat_postMessage(channel=self.config["SLACK_CHANNEL"], text="",
+                text_message = "🔓 * %s Tool was unlocked* by %s" % (device_name, user_name)
+                self.slack_app.client.chat_postMessage(channel=self.config["SLACK_CHANNEL"], text=text_message,
                                                        blocks=unlock_message_block_constructor(device_name, user_name))
         except Exception as e:
             self.logger.error("Error in SlackNotifierPlugin.access_log_entry_added: %s", e)
