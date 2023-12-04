@@ -42,10 +42,15 @@ def api_get_devices():
 @web_api.route("/api/devices", methods=["POST"])
 def api_add_device():
     device_data = request.get_json()
-    device = Device(device_data["device_id"], device_data["device_type"], device_data.get("name"))
-    device.save()
 
-    return jsonify({"message": "Device added successfully"})
+    try:
+        device = Device(device_data["device_id"], device_data.get("device_name"), device_data["device_type"])
+        device.save()
+        app.logger.info("Device %s added successfully" % device_data["device_id"])
+        return jsonify({"message": "Device added successfully"}), 201
+    except Exception as e:
+        app.logger.error("Error adding device: %s" % e)
+        return jsonify({"message": "Error adding device"}), 303
 
 
 @web_api.route("/api/devices/<device_id>", methods=["PUT"])
