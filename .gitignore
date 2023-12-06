@@ -1,6 +1,7 @@
 # Project-specific files
 external/
 log.txt
+*.db
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

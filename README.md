@@ -88,7 +88,7 @@ logging:
 export FLASK_APP=application.py
 flask run --debug
 ```
-
+if you want to autorestart you app on Flask changes, you can do `export FLASK_DEBUG=1`. In case of `Import Error` run `pip3 install --upgrade watchdog`.
 By default, this should be run by Prismo admin process, but for debugging purpose you should run this commands by
 yourself.
 

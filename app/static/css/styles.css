@@ -1,0 +1,10 @@
+.full-height {
+    height: auto;
+}
+
+@media (min-width: 576px) {
+    .full-height {
+        min-height: 100vh;
+        height: 100%;
+    }
+}
