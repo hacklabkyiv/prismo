@@ -1,5 +1,7 @@
 import sqlite3
+
 from flask import current_app as app
+
 
 class Device:
     """Represents a device in the database."""
@@ -103,6 +105,15 @@ class Device:
 
         if new_name is not None:
             cursor.execute("UPDATE devices SET name = ? WHERE id = ?", (new_name, self.device_id))
+
+        connection.commit()
+        connection.close()
+
+    def delete(self):
+        connection = sqlite3.connect(app.config["DATABASE_URI"])
+        cursor = connection.cursor()
+
+        cursor.execute("DELETE FROM devices WHERE id = ?", (self.device_id,))
 
         connection.commit()
         connection.close()

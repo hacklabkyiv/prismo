@@ -7,7 +7,8 @@
         <div class="card-header"> Add new RFID Reader Device: </div>
         <div class="card-body">
           <div class="input-group mb-3">
-            <button class="btn btn-primary" type="submit" onclick="addDevice(document.getElementById('device_name').value)">
+            <button class="btn btn-primary" type="submit"
+              onclick="addDevice(document.getElementById('device_name').value)">
               <i class="bi bi-database-add"></i> Add device </button>
             <input type="text" class="form-control" id="device_name" placeholder="Device Name">
           </div>
@@ -27,23 +28,30 @@
       const accordionItemsHTML = [];
       for (const device of devices) {
         const accordionItemHTML = `
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse-${device.id}" aria-expanded="false" aria-controls="flush-collapse-${device.id}">
+                <i class="bi bi-phone-vibrate-fill"></i> | ${device.name}
+              </button>
+            </h2>
 
-			<div class="accordion-item">
-				<h2 class="accordion-header">
-					<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse-${device.id}" aria-expanded="false" aria-controls="flush-collapse-${device.id}">
-						<i class="bi bi-phone-vibrate-fill"></i> | ${device.name}
+            <div id="flush-collapse-${device.id}" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+              <div class="accordion-body">
+                <div class="d-flex justify-content-between align-items-center">
 
-					</button>
-				</h2>
-				<div id="flush-collapse-${device.id}" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
-					<div class="accordion-body d-flex justify-content-between">
-						<div class="row">
-                                    Device id: ${device.id}, Device type: ${device.type}
-                                </div>
-						<button type="button" class="btn btn-primary">Flash Connected Device</button>
-					</div>
-				</div>
-			</div>
+                  <div class="me-3">
+                    Device id: ${device.id}, Device type: ${device.type}
+                  </div>
+
+                  <div>
+                    <button type="button" class="btn btn-primary me-3">Flash Connected Device</button>
+                    <button type="button" class="btn btn-danger" onclick="removeDevice('${device.id}')">Remove Device</button>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
                 `;
         accordionItemsHTML.push(accordionItemHTML);
       }
@@ -61,7 +69,7 @@
         "device_type": "tool"
       };
       // Make API call to add device
-      fetch('http://127.0.0.1:5000/api/devices', {
+      fetch('/api/devices', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -81,8 +89,24 @@
       });
     }
 
+    function removeDevice(deviceId) {
+      fetch(`/api/devices/${deviceId}`, {
+        method: 'DELETE',
+      }).then(response => {
+        if (response.status === 200) {
+          alert('Device removed successfully!');
+          refreshDevicesList();
+        } else {
+          alert('Error removing device. Please try again later.');
+        }
+      }).catch(error => {
+        console.error('Error removing device:', error);
+        alert('Error removing device. Please try again later.');
+      });
+    }
+
     function refreshDevicesList() {
-      fetch('http://localhost:5000/api/devices')
+      fetch('/api/devices')
         .then(response => response.json())
         .then(data => generateAccordionItems(data))
         .catch(error => console.error('Error fetching data:', error));

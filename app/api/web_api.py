@@ -65,10 +65,14 @@ def api_update_device(device_id):
 
 @web_api.route("/api/devices/<device_id>", methods=["DELETE"])
 def api_remove_device(device_id):
-    device = Device(device_id=device_id, device_type=None, name=None)
-    device.delete()
-
-    return jsonify({"message": "Device removed successfully"})
+    try:
+        device = Device(device_id=device_id, device_type=None, name=None)
+        device.delete()
+        app.logger.info("Device %s removed successfully" % device_id)
+        return jsonify({"message": "Device removed successfully"}), 200
+    except Exception as e:
+        app.logger.error("Error removing device: %s" % e)
+        return jsonify({"message": "Error removing device"}), 303
 
 
 """
