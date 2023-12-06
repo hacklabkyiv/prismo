@@ -166,17 +166,18 @@ def api_update_settings():
     try:
         settings = app.config["PRISMO"]
         new_settings = json.loads(request.data)
-
-        settings.update(new_settings)
+        app.logger.info("New settings received: %s", new_settings)
+        app.config["PRISMO"] = new_settings
 
         app.logger.info("Updated settings: %s", settings)
-        # Update "PRISMO" branch in settings
+        # Update "PRISMO" branch in settings file
         try:
             with open(app.config["PRISMO"]["CURRENT_CONFIG_FILE"], "r") as f:
                 stored_settings = json.load(f)
             with open(app.config["PRISMO"]["CURRENT_CONFIG_FILE"], "w") as f:
-                stored_settings[app.config["PRISMO"]["CURRENT_CONFIG_FILE"]] = settings
+                stored_settings["PRISMO"] = new_settings
                 json.dump(stored_settings, f, indent=4)
+                app.logger.warning("Settings updated, new settings are: %s", stored_settings)
         except Exception as e:
             app.logger.error("Error saving settings to file: %s", e)
 

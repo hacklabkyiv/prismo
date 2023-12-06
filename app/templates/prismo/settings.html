@@ -4,66 +4,56 @@
   <div class="container-fluid px-md-5">
     <h1 class="my-4">Settings</h1>
 
-    <div id="settings-container"></div>
+    <div id="jsoneditor"></div>
 
-    <button id="save-settings-btn" class="btn btn-primary">Save Settings</button>
+    <button class="btn btn-primary"  id="save-settings-button">Save Settings</button>
 
-    <script>
-      $(document).ready(function() {
-        $.ajax({
-          url: "/api/settings",
-          method: "GET",
-          dataType: "json",
-          success: function(settingsData) {
-            var settingsContainer = document.getElementById("settings-container");
-            for (var key in settingsData) {
-              var settingElement = document.createElement("div");
-              settingElement.className = "form-group";
+    <script type="module">
+      import { JSONEditor } from 'https://cdn.jsdelivr.net/npm/vanilla-jsoneditor/index.js'
 
-              var labelElement = document.createElement("label");
-              labelElement.for = key;
-              labelElement.textContent = key;
-              settingElement.appendChild(labelElement);
+      // Fetch JSON data from API endpoint
+      const fetchSettings = async () => {
+        const response = await fetch('/api/settings');
+        const jsonData = await response.json();
+        return jsonData;
+      };
+      const settingsData = await fetchSettings();
+      let content = {
+        text: undefined,
+        json: settingsData
+      }
 
-              var inputElement = document.createElement("input");
-              inputElement.type = "text";
-              inputElement.className = "form-control";
-              inputElement.id = key;
-              inputElement.name = key;
-              inputElement.value = settingsData[key];
-              settingElement.appendChild(inputElement);
+      const editor = new JSONEditor({
+        target: document.getElementById('jsoneditor'),
+        props: {
+          content
+        }
+      })
 
-              settingsContainer.appendChild(settingElement);
-            }
-          },
-          error: function(error) {
-            console.error("Error fetching settings:", error);
-            alert("Error fetching settings. Please try again.");
-          }
-        });
+      // Handle 'Save Settings' button click
+      const saveSettingsButton = document.getElementById('save-settings-button');
+      saveSettingsButton.addEventListener('click', async () => {
+        const updatedSettings = editor.get();
 
-        $("#save-settings-btn").click(function() {
-          var settingsData = {};
-          $("#settings-container input").each(function() {
-            var key = $(this).attr("name");
-            var value = $(this).val();
-            settingsData[key] = value;
-          });
-
-          $.ajax({
-            url: "/api/settings",
-            method: "PUT",
-            contentType: "application/json",
-            data: JSON.stringify(settingsData),
-            success: function() {
-              alert("Settings updated successfully!");
+        try {
+          const response = await fetch('/api/settings', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json'
             },
-            error: function(error) {
-              console.error("Error updating settings:", error);
-              alert("Error updating settings. Please try again.");
-            }
+            body: JSON.stringify(updatedSettings["json"])
           });
-        });
+          const responseData = await response.json();
+
+          // Update the JSON editor with the updated settings
+          editor.update({json: responseData, text: undefined});
+
+          // Display a success message
+          alert('Settings saved successfully!');
+        } catch (error) {
+          console.error('Error saving settings:', error);
+          alert('Error saving settings. Please try again.');
+        }
       });
     </script>
   </div>
