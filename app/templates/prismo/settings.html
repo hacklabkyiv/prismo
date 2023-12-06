@@ -1,0 +1,60 @@
+{% extends "layout.html" %}
+
+{% block content %}
+  <div class="container-fluid px-md-5">
+    <h1 class="my-4">Settings</h1>
+
+    <div id="jsoneditor"></div>
+
+    <button class="btn btn-primary"  id="save-settings-button">Save Settings</button>
+
+    <script type="module">
+      import { JSONEditor } from 'https://cdn.jsdelivr.net/npm/vanilla-jsoneditor/index.js'
+
+      // Fetch JSON data from API endpoint
+      const fetchSettings = async () => {
+        const response = await fetch('/api/settings');
+        const jsonData = await response.json();
+        return jsonData;
+      };
+      const settingsData = await fetchSettings();
+      let content = {
+        text: undefined,
+        json: settingsData
+      }
+
+      const editor = new JSONEditor({
+        target: document.getElementById('jsoneditor'),
+        props: {
+          content
+        }
+      })
+
+      // Handle 'Save Settings' button click
+      const saveSettingsButton = document.getElementById('save-settings-button');
+      saveSettingsButton.addEventListener('click', async () => {
+        const updatedSettings = editor.get();
+
+        try {
+          const response = await fetch('/api/settings', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedSettings["json"])
+          });
+          const responseData = await response.json();
+
+          // Update the JSON editor with the updated settings
+          editor.update({json: responseData, text: undefined});
+
+          // Display a success message
+          alert('Settings saved successfully!');
+        } catch (error) {
+          console.error('Error saving settings:', error);
+          alert('Error saving settings. Please try again.');
+        }
+      });
+    </script>
+  </div>
+{% endblock %}

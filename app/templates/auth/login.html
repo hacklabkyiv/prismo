@@ -1,0 +1,36 @@
+{% block content %}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Form</title>
+    <link rel="stylesheet" href="/static/css/auth.css">
+</head>
+<body>
+<div class="login-container">
+    <h2>Login</h2>
+    <form id="loginForm" class="login-form" action="#" method="post">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+
+        <button type="submit">Login</button>
+    </form>
+</div>
+</body>
+
+<script>
+    document.getElementById('loginForm').addEventListener('submit', function(event) {
+    console.log('loginForm submitted')
+
+    let username = document.getElementById('username').value
+
+    localStorage.setItem('username', username)
+    })
+</script>
+</html>
+
+{% endblock %}
