@@ -1,3 +1,5 @@
+# pylint: disable=consider-using-f-string
+# pylint: disable=broad-except
 import json
 
 from flask import Blueprint, jsonify, request
@@ -8,9 +10,8 @@ from models.user import User
 
 web_api = Blueprint("web_api", __name__)
 
-"""
-Logs API
-"""
+
+# Logs API
 
 
 @web_api.route("/api/logs", methods=["GET"])
@@ -24,9 +25,7 @@ def api_get_logs():
     return jsonify(AccessLog.get_full_log(start_time, end_time, limit, offset))
 
 
-"""
-Devices API
-"""
+# Devices API
 
 
 @web_api.route("/api/devices/latest_key", methods=["GET"])
@@ -44,7 +43,8 @@ def api_add_device():
     device_data = request.get_json()
 
     try:
-        device = Device(device_data["device_id"], device_data.get("device_name"), device_data["device_type"])
+        device = Device(device_data["device_id"], device_data.get(
+            "device_name"), device_data["device_type"])
         device.save()
         app.logger.info("Device %s added successfully" % device_data["device_id"])
         return jsonify({"message": "Device added successfully"}), 201
@@ -75,27 +75,28 @@ def api_remove_device(device_id):
         return jsonify({"message": "Error removing device"}), 303
 
 
-"""
-Users API
-"""
-
+# Users API
 
 @web_api.route("/api/users", methods=["GET"])
 def api_get_user_permissions():
     return jsonify(User.get_permissions())
 
 
-@web_api.route("/api/users", methods=["POST"])
 def api_add_user():
     user_data = request.get_json()
 
     user = User(user_data["name"], user_data["key"], user_data.get("slack_id"))
 
     number_of_new_user_added = user.save()
+
+    # pylint: disable=no-else-return
     if number_of_new_user_added == 1:
         return jsonify({"message": "User added successfully"}), 201
-    if number_of_new_user_added == 0:
+    elif number_of_new_user_added == 0:
         return jsonify({"message": "User already exists"}), 303
+
+    # Handle other cases (e.g., database error)
+    return jsonify({"message": "An error occurred"}), 500
 
 
 @web_api.route("/api/users/<user_key>", methods=["DELETE"])
@@ -122,9 +123,7 @@ def api_remove_user_permission(user_key, device_id):
     return jsonify({"message": "User permission removed successfully"})
 
 
-"""
-Settings API
-"""
+# Settings API
 
 
 @web_api.route("/api/settings", methods=["GET"])

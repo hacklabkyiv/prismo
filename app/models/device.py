@@ -42,10 +42,10 @@ class Device:
     def get_authorized_users(cls, device_id):
         """
         Retrieves the list of authorized users for a specific device.
-        
+
         Args:
             device_id (int): The ID of the device to check permissions for.
-        
+
         Returns:
             list: A list of user keys authorized to access the specified device.
         """
@@ -56,7 +56,8 @@ class Device:
 
         # Fetch authorized users for the given device
         cursor.execute(
-            "SELECT users.key FROM users INNER JOIN permissions ON users.key = permissions.user_key WHERE permissions.device_id = ?",
+            "SELECT users.key FROM users INNER JOIN permissions"
+            "ON users.key = permissions.user_key WHERE permissions.device_id = ?",
             (device_id,),
         )
         authorized_users = [row[0] for row in cursor.fetchall()]
@@ -101,7 +102,8 @@ class Device:
         cursor = connection.cursor()
 
         if new_device_type is not None:
-            cursor.execute("UPDATE devices SET type = ? WHERE id = ?", (new_device_type, self.device_id))
+            cursor.execute("UPDATE devices SET type = ? WHERE id = ?",
+                           (new_device_type, self.device_id))
 
         if new_name is not None:
             cursor.execute("UPDATE devices SET name = ? WHERE id = ?", (new_name, self.device_id))
@@ -134,8 +136,8 @@ class Device:
         result = cursor.fetchone()
         if result:
             return Device(result[0], result[1], result[2], result[3])
-        else:
-            return None
+
+        return None
 
     @classmethod
     def get_latest_key(cls):
@@ -144,7 +146,8 @@ class Device:
         """
         connection = sqlite3.connect(app.config["DATABASE_URI"])
         connection.row_factory = sqlite3.Row
-        # This query returns extended info about latest key event (user_key, operation_time, device_name, user_name)
+        # This query returns extended info about latest key event
+        # (user_key, operation_time, device_name, user_name)
         query = """
             SELECT el.user_key, el.operation_time, d.name AS device_name
             FROM event_logs el

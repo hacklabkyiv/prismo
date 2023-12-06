@@ -32,6 +32,7 @@ slack_notifier = SlackNotifierPlugin(app.app_context())
 
 @login_manager.user_loader
 def load_user(user_id):
+    # pylint: disable=unused-argument
     return AdminUser("", "")
 
 

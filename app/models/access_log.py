@@ -1,6 +1,7 @@
 import sqlite3
 from flask import current_app as app
 
+
 class AccessLog:
     def __init__(self, device_id, user_key, operation_type, operation_time):
         self.device_id = device_id
@@ -17,16 +18,18 @@ class AccessLog:
         """
         connection = sqlite3.connect(app.config["DATABASE_URI"])
         cursor = connection.cursor()
-        cursor.execute("INSERT INTO event_logs(device_id, user_key, operation_type) VALUES (?, ?, ?)",
-        (device_id, user_key, operation),
-        )
+        cursor.execute("INSERT INTO event_logs(device_id, user_key, operation_type)"
+                       "VALUES (?, ?, ?)",
+                       (device_id, user_key, operation),
+                       )
         connection.commit()
         connection.close()
+
     @classmethod
     def get_full_log(cls, start_time=None, end_time=None, limit=100, offset=0):
         """
-        Retrieve event logs from a SQLite database within a specified time range and limit the number
-        of results.
+        Retrieve event logs from a SQLite database within a specified time range and limit the
+        number of results.
 
         Args:
             start_time (str, optional): The start time of the time range to filter the logs. Should
@@ -50,7 +53,7 @@ class AccessLog:
         Example:
             Retrieve logs for a specific time range and limit the results
 
-            logs = query_event_logs(start_time='2023-01-01 00:00:00', end_time='2023-01-31 23:59:59',
+            logs = query_event_logs(start_time='2023-01-01 00:00:00',end_time='2023-01-31 23:59:59',
             limit=50)
         """
         connection = sqlite3.connect(app.config["DATABASE_URI"])

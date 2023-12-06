@@ -4,6 +4,7 @@ import argon2
 from flask_login import UserMixin
 from flask import current_app as app
 
+
 class AdminUser(UserMixin):
     def __init__(self, username, password=None):
         self.username = username
@@ -19,10 +20,11 @@ class AdminUser(UserMixin):
         result = cursor.fetchone()
         connection.close()
         if not result:
-            app.logger.warning(f"Username not found")
+            app.logger.warning("Username not found")
             return False
         try:
-            app.logger.info(f"Verify hash result:", argon2.PasswordHasher().verify(result[0], password))
+            app.logger.info("Verify hash result:",
+                            argon2.PasswordHasher().verify(result[0], password))
             return True
         except argon2.exceptions.VerifyMismatchError:
             app.logger.warning("Wrong password")
@@ -36,5 +38,6 @@ class AdminUser(UserMixin):
         connection.commit()
         connection.close()
 
+    # pylint: disable=invalid-overridden-method
     def is_authenticated(self):
         return True

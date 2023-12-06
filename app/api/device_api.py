@@ -1,9 +1,9 @@
 from flask import Flask, Blueprint, jsonify, request
+from flask import current_app as app
 
 from models.access_log import AccessLog
-from models.user import User
 from models.device import Device
-from flask import current_app as app
+
 import json
 
 
@@ -20,7 +20,6 @@ def accesses(device_id):
 @device_api.route("/devices/<device_id>/log_operation", methods=["POST"])
 def log_operation(device_id):
 
-    #json_data = json.loads(request.get_json())
     json_data = request.get_json()
     if not json_data:
         raise Exception("Invalid request, no JSON data received")
@@ -36,5 +35,6 @@ def log_operation(device_id):
         raise Exception("Invalid operation")
 
     AccessLog.add(device_id, user_key, operation)
-    app.ee.emit('access-log-entry-added', {"device_id": device_id, "user_key": user_key, "operation": operation})
+    app.ee.emit('access-log-entry-added', {"device_id": device_id,
+                "user_key": user_key, "operation": operation})
     return "OK", 201

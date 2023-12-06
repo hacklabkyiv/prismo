@@ -1,6 +1,7 @@
 import sqlite3
 from flask import current_app as app
 
+
 class User:
     def __init__(self, name, key, slack_id=None):
         self.name = name
@@ -15,8 +16,8 @@ class User:
         result = cursor.fetchone()
         if result:
             return User(result[0], result[1], result[2])
-        else:
-            return None
+
+        return None
 
     def save(self):
         """
@@ -89,9 +90,9 @@ class User:
             # Get device permissions for the current user
             device_permissions = []
             cursor.execute("SELECT devices.id, devices.name FROM devices")
-            for row in cursor.fetchall():
-                device_id = row[0]
-                device_name = row[1]
+            for result in cursor.fetchall():
+                device_id = result[0]
+                device_name = result[1]
 
                 # Check if device-user pair exists in permissions table
                 cursor.execute(
@@ -101,10 +102,7 @@ class User:
                 exists_result = cursor.fetchone()
 
                 # Set allowed flag based on existence in permissions table
-                if exists_result:
-                    allowed = True  # Explicit permission found
-                else:
-                    allowed = False  # No explicit permission found
+                allowed = bool(exists_result is not None)  # Default to False
 
                 # Append device information to the permissions list
                 device_permissions.append(
@@ -138,10 +136,8 @@ class User:
             (self.key, device_id),
         )
         result = cursor.fetchone()
-        if result:
-            return True
-        else:
-            return False
+
+        return bool(result is not None)
 
     def add_permission(self, device_id):
         # Connect to the database
