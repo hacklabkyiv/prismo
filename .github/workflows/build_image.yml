@@ -34,4 +34,4 @@ jobs:
           platforms: linux/arm64/v8, linux/arm64, linux/amd64
           push: true
           tags: |
-            0.1.9
+            hacklabkyiv/prismo-app:0.1.9
