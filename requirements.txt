@@ -10,5 +10,5 @@ pylint
 pycodestyle
 gunicorn==20.0.4
 argon2-cffi
-pyee
+pyee~=11.1.0
 slack-bolt

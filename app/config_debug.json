@@ -18,7 +18,7 @@
         "NOTIFIER": {
             "CURRENT_NOTIFIER": "SLACK",
             "SLACK_CHANNEL": "#prismo-debugxx",
-            "SLACK_TOKEN": "xoxb-10631168368-6285659487555-mlu3mtOsfnSI74TNS4JOjBvg"
+            "SLACK_TOKEN": "xoxb-156594252659-6059712941424-f2Ot4xppyE5wvLs1RtgGPj0N"
         }
     }
 }
