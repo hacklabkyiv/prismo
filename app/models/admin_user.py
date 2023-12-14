@@ -1,8 +1,8 @@
 import sqlite3
 
 import argon2
-from flask_login import UserMixin
 from flask import current_app as app
+from flask_login import UserMixin
 
 
 class AdminUser(UserMixin):
@@ -33,7 +33,7 @@ class AdminUser(UserMixin):
     def create_user(self):
         connection = sqlite3.connect(app.config["DATABASE_URI"])
         cursor = connection.cursor()
-        cursor.execute("INSERT OR REPLACE INTO admins (id, username, password) VALUES (1, ?, ?)",
+        cursor.execute("INSERT INTO admins (id, username, password) VALUES (1, ?, ?)",
                        (self.username, self.hashed_password))
         connection.commit()
         connection.close()

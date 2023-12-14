@@ -1,0 +1,9 @@
+services:
+  prismo-app:
+    image: hacklabkyiv/prismo-app:0.1.7
+    container_name: prismo-app
+    restart: always
+    ports:
+      - 80:5000
+    volumes:
+      - ./data/:/app/external/

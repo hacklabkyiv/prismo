@@ -1,4 +1,5 @@
 import json
+import sqlite3
 
 from flask import Flask, render_template, request, redirect, url_for
 from flask_login import (
@@ -21,13 +22,23 @@ app.ee = EventEmitter()
 app.register_blueprint(web_api)
 app.register_blueprint(device_api)
 
-app.config.from_file("config_debug.json", load=json.load)
+app.config.from_file("../external/config_debug.json", load=json.load)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
 
 # Plugins
 slack_notifier = SlackNotifierPlugin(app.app_context())
+
+connection = sqlite3.connect(app.config["DATABASE_URI"])
+
+sql_script_file = 'schema.sql'
+
+with open(sql_script_file, 'r') as sql_file:
+    sql_script = sql_file.read()
+
+connection.executescript(sql_script)
+connection.close()
 
 
 @login_manager.user_loader
