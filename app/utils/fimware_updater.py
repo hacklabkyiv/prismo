@@ -1,92 +1,97 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
-# Disable pylint for the file
-# pylint: disable=all
-
-"""Reader firmware update tool. It erases memory, flashes Micropython and
-working scripts itself to connected device.
-
-@author: Artem Synytsyn <a.synytsyn@gmail.com>
 """
-from flask import Flask, render_template
-from flask_sock import Sock
+RFID Reader firmware management module
+"""
+import json
+import re
 import subprocess
-import shlex
-import pathlib
+import uuid
+from pathlib import Path
 
-# TODO: Read all these pathes from config file
-ESPTOOL_PATH = "/home/artsin/Dev/esptool/esptool.py"
-AMPY_PATH = "/home/artsin/.local/bin/ampy"
-MICROPYTHON_DISTRO_PATH = "/home/artsin/Downloads/ESP32_GENERIC-20231005-v1.21.0.bin"
-
-READER_FW_PATH = "/home/artsin/Dev/prismo-reader/src/"
-
-command_erase = ["python3", ESPTOOL_PATH, "erase_flash"]
-command_flash_micropython = [
-    "python3",
-    ESPTOOL_PATH,
-    "--baud",
-    "460800",
-    "write_flash",
-    "-z",
-    "0x1000",
-    MICROPYTHON_DISTRO_PATH,
-]
-# TODO: Serial port autodetect
-commands_upload_scripts = [AMPY_PATH, "-p", "/dev/ttyUSB0", "put"]
+from flask import current_app as app
 
 
-def erase_flash(socket):
-    process = subprocess.Popen(command_erase, stdout=subprocess.PIPE)
+def update_firmware_full(socket, device_id):
+    """Run full firmware update, by running firmware updater script
+
+    This function runs firmware updater script, which erases memory, flashes
+    Micropython and working scripts to connected device.
+
+    It sends data to frontend, which is used for showing progress of firmware
+    update.
+
+    Arguments:
+    socket -- communication websocket
+    device_id -- device ID string, MUST be UUID string in format
+                                        550e8400-e29b-41d4-a716-446655440000
+
+    Returns:
+    bool -- True if firmware update was successful, False otherwise
+    """
+    # pylint: disable=broad-exception-caught
+    app.logger.info("Updating firmware for device %s", device_id)
+    # Data used for transfer to frontend
+    data = {"text": "", "progress": 0, "status": "is_running"}
+    try:
+        script_path = Path(app.config["PRISMO"]["READER_FIRMWARE_FLASHING_SCRIPT_PATH"])
+        script_cwd = script_path.parent
+        process = subprocess.Popen([script_path, device_id], cwd=script_cwd, stdout=subprocess.PIPE)
+    except FileNotFoundError:
+        data["text"] = "Cannot find firmware update script"
+        data["status"] = "Device flashing failed"
+        socket.send(json.dumps(data))
+        app.logger.error("Cannot find firmware update script")
+        return False
+    except Exception as e:
+        data["text"] = "Exception %s during running flashing script"
+        data["status"] = "Device flashing failed"
+        socket.send(json.dumps(data))
+        app.logger.error("Exception during running flashing script: %s", e)
+        return False
+    # TODO: add process timeout, to exit from socket if process is too long # pylint: disable=fixme
     while True:
         output = process.stdout.readline()
         if output == "" and process.poll() is not None:
             break
         if output:
-            data = output.strip()
-            print(data)
-            socket.send(str(data))
-            if b"Hard resetting via RTS pin" in data:
-                return True
-    return False
+            text = output.strip()
+            app.logger.info("%s", text.decode("utf-8"))
+            data["text"] = text.decode("utf-8")
+            # Get progress value
+            progress_match = re.search(r"PROGRESS:\d+", data["text"])
+            if progress_match:
+                data["progress"] = int(progress_match.group(0).split(":")[1])
 
+            status_match = re.search(r"STATUS:(.*)]", data["text"])
+            if status_match:
+                data["status"] = status_match.group(1).strip()
+                app.logger.info("Flashing, status updated: %s", data["status"])
+            socket.send(json.dumps(data))
 
-def flash_micropython_binary(socket):
-    process = subprocess.Popen(command_flash_micropython, stdout=subprocess.PIPE)
-    while True:
-        output = process.stdout.readline()
-        if output == "" and process.poll() is not None:
-            break
-        if output:
-            data = output.strip()
-            print(data)
-            socket.send(str(data))
-            if b"Hard resetting via RTS pin" in data:
-                return True
-    return False
+            failed_match = re.search(r"FAILED]", data["text"])
+            if failed_match:
+                app.logger.info("Flashing, status failed found, returning: %s", data["status"])
+                return False
 
-
-def upload_python_scripts(socket):
-    firmware_files = [f for f in pathlib.Path(READER_FW_PATH).iterdir() if f.is_file()]
-    for file in firmware_files:
-        socket.send("Download: " + str(file.name))
-        # Make a copy, since we do not want to change original command template
-        command = commands_upload_scripts[:]
-        command.append(str(file))
-        process = subprocess.Popen(command, stdout=subprocess.PIPE)
-        process.wait()
-        socket.send("OK")
     return True
 
 
-def update_firmware_full(socket):
-    socket.send("--------- FLASH ERASE ----------------")
-    result = erase_flash(socket)
-    print("Erase flash result: ", result)
-    socket.send("------- MICROPYTHON INSTALL ----------")
-    result = flash_micropython_binary(socket)
-    print("upload script")
-    socket.send("----------- UPLOAD FIRMWARE ----------")
-    upload_python_scripts(socket)
-    socket.send("----------- DONE! ----------")
+def firmware_updater_route(websocket):
+    device_id = None
+    while device_id is None:
+        message = websocket.receive()
+        if message:
+            try:
+                # Check if we have received valid uuid string.
+                uuid.UUID(message)
+                device_id = message
+            except ValueError:
+                print("No uuid string was received:", message)
+
+    if device_id is not None:
+        update_result = update_firmware_full(websocket, device_id)
+        app.logger.warning("Update result: %s", update_result)
+    else:
+        app.logger.warning("No device id was received")
+    app.logger.warning("Close websocket")

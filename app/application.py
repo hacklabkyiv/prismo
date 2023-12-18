@@ -9,12 +9,13 @@ from flask_login import (
     login_required,
     current_user,
 )
+from flask_sock import Sock
 from pyee.base import EventEmitter
 
 from api.device_api import device_api
 from api.web_api import web_api
 from models.admin_user import AdminUser
-from plugins.slack_notifier import SlackNotifierPlugin
+from utils.fimware_updater import firmware_updater_route
 
 app = Flask(__name__)
 app.ee = EventEmitter()
@@ -27,8 +28,11 @@ app.config.from_file("../external/config_debug.json", load=json.load)
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+websocket = Sock(app)
+
+
 # Plugins
-slack_notifier = SlackNotifierPlugin(app.app_context())
+# slack_notifier = SlackNotifierPlugin(app.app_context())
 
 connection = sqlite3.connect(app.config["DATABASE_URI"])
 
@@ -128,3 +132,8 @@ def logs():
 @login_required
 def settings():
     return render_template("prismo/settings.html")
+
+
+@websocket.route('/reader_flasher')
+def updater(socket):
+    firmware_updater_route(socket)

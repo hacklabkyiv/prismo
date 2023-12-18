@@ -56,7 +56,7 @@ class Device:
 
         # Fetch authorized users for the given device
         cursor.execute(
-            "SELECT users.key FROM users INNER JOIN permissions"
+            "SELECT users.key FROM users INNER JOIN permissions "
             "ON users.key = permissions.user_key WHERE permissions.device_id = ?",
             (device_id,),
         )
