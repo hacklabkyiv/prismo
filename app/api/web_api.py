@@ -184,9 +184,3 @@ def api_update_settings():
     except Exception as e:
         app.logger.error("Error updating settings: %s", e)
         raise Exception("Error updating settings") from e
-
-# websocket = Sock(app)
-# @websocket.route('/updater_socket')
-# def updater(websocket):
-#    # pylint: disable=redefined-outer-name
-#    update_firmware_full(websocket)
