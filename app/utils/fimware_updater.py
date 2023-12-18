@@ -49,7 +49,7 @@ def update_firmware_full(socket, device_id):
         socket.send(json.dumps(data))
         app.logger.error("Exception during running flashing script: %s", e)
         return False
-    # TODO: add timeout for process, to exit from socket if process is too long # pylint: disable=fixme
+    # TODO: add process timeout, to exit from socket if process is too long # pylint: disable=fixme
     while True:
         output = process.stdout.readline()
         if output == "" and process.poll() is not None:
