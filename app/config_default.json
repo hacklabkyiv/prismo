@@ -1,6 +1,6 @@
 {
-    "DEBUG": false,
-    "TESTING": false,
+    "DEBUG": true,
+    "TESTING": true,
     "SECRET_KEY": "secret_key",
     "USE_X_SENDFILE": false,
     "APPLICATION_ROOT": "/",
@@ -14,12 +14,11 @@
     "MAX_COOKIE_SIZE": 4093,
     "DATABASE_URI": "file:database.db",
     "PRISMO": {
-        "READER_FIRMWARE_FLASHING_SCRIPT_PATH": "/path/to/reader/firmware/src/flasher.sh",
-        "CURRENT_CONFIG_FILE": "config_debug.json",
         "NOTIFIER": {
             "CURRENT_NOTIFIER": "SLACK",
             "SLACK_CHANNEL": "#prismo-debug",
             "SLACK_TOKEN": "xoxb-THIS-ISNOTAREAL-SLACKTOKEN"
-        }
+        },
+        "READER_FIRMWARE_FLASHING_SCRIPT_PATH": "/path/to/reader/firmware/src/flasher.sh"
     }
 }
