@@ -1,3 +1,4 @@
+import os
 import json
 import sqlite3
 
@@ -23,7 +24,11 @@ app.ee = EventEmitter()
 app.register_blueprint(web_api)
 app.register_blueprint(device_api)
 
-app.config.from_file("../external/config_debug.json", load=json.load)
+# Load default config if no PRISMO_CONFIG environment variable is set.
+prismo_config_file = os.environ.get('PRISMO_CONFIG', 'config_default.json')
+app.config.from_file(prismo_config_file, load=json.load)
+app.config["CURRENT_CONFIG_FILE"] = prismo_config_file
+app.logger.warning("PRISMO Config File loaded: %s", prismo_config_file)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
