@@ -171,9 +171,9 @@ def api_update_settings():
         app.logger.info("Updated settings: %s", settings)
         # Update "PRISMO" branch in settings file
         try:
-            with open(app.config["PRISMO"]["CURRENT_CONFIG_FILE"], "r") as f:
+            with open(app.config["CURRENT_CONFIG_FILE"], "r") as f:
                 stored_settings = json.load(f)
-            with open(app.config["PRISMO"]["CURRENT_CONFIG_FILE"], "w") as f:
+            with open(app.config["CURRENT_CONFIG_FILE"], "w") as f:
                 stored_settings["PRISMO"] = new_settings
                 json.dump(stored_settings, f, indent=4)
                 app.logger.warning("Settings updated, new settings are: %s", stored_settings)
