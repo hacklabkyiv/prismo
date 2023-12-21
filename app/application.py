@@ -13,6 +13,8 @@ from flask_login import (
 from flask_sock import Sock
 from pyee.base import EventEmitter
 
+from plugin_manager import PluginManager
+
 from api.device_api import device_api
 from api.web_api import web_api
 from models.admin_user import AdminUser
@@ -35,12 +37,8 @@ login_manager.init_app(app)
 
 websocket = Sock(app)
 
-
-# Plugins
-# slack_notifier = SlackNotifierPlugin(app.app_context())
-
+# DB management
 connection = sqlite3.connect(app.config["DATABASE_URI"])
-
 sql_script_file = 'schema.sql'
 
 with open(sql_script_file, 'r') as sql_file:
@@ -48,6 +46,10 @@ with open(sql_script_file, 'r') as sql_file:
 
 connection.executescript(sql_script)
 connection.close()
+
+# Plugin management
+plugin_manager = PluginManager(app)
+plugin_manager.load_plugins(app.config["PRISMO"]["ACTIVE_PLUGINS"])
 
 
 @login_manager.user_loader
