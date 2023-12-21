@@ -1,5 +1,5 @@
-import os
 import json
+import os
 import sqlite3
 
 from flask import Flask, render_template, request, redirect, url_for
@@ -13,11 +13,10 @@ from flask_login import (
 from flask_sock import Sock
 from pyee.base import EventEmitter
 
-from plugin_manager import PluginManager
-
 from api.device_api import device_api
 from api.web_api import web_api
 from models.admin_user import AdminUser
+from plugin_manager import PluginManager
 from utils.fimware_updater import firmware_updater_route
 
 app = Flask(__name__)
@@ -43,8 +42,8 @@ sql_script_file = 'schema.sql'
 
 with open(sql_script_file, 'r') as sql_file:
     sql_script = sql_file.read()
+    connection.executescript(sql_script)
 
-connection.executescript(sql_script)
 connection.close()
 
 # Plugin management
@@ -60,6 +59,9 @@ def load_user(user_id):
 
 @app.route("/init_app", methods=["GET", "POST"])
 def init_app_route():
+    if AdminUser("").check_if_admin_created():
+        return redirect(url_for("login"))
+
     if request.method == "GET":
         return render_template("auth/init_app.html")
 
@@ -67,18 +69,15 @@ def init_app_route():
     password = request.form["password"]
     AdminUser(username, password).create_user()
 
-    # if "file" in request.files:
-    #    file = request.files["file"]
-    # else:
-    #    file = None
-
-    # init_app(username, password, slat, file)
-
     return redirect(url_for("login"))
 
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    # Check if this is first run, and admin_users table is empty
+    if not AdminUser("").check_if_admin_created():
+        return redirect(url_for("init_app_route"))
+
     if current_user.is_authenticated:
         return redirect(url_for("users"))
 

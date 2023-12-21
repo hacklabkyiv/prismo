@@ -12,6 +12,14 @@ class AdminUser(UserMixin):
             self.hashed_password = argon2.PasswordHasher().hash(password)
         self.id = 1
 
+    def check_if_admin_created(self):
+        connection = sqlite3.connect(app.config["DATABASE_URI"])
+        cursor = connection.cursor()
+        cursor.execute("SELECT id FROM admins")
+        result = cursor.fetchone()
+        connection.close()
+        return result
+
     def check_password(self, password):
         connection = sqlite3.connect(app.config["DATABASE_URI"])
         cursor = connection.cursor()
