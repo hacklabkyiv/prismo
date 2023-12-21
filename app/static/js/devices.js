@@ -73,9 +73,22 @@ function generateAccordionItems(devices) {
   devicesListElement.innerHTML = accordionItemsHTML.join("");
 }
 
+function generateUUID() {
+  var d = new Date().getTime()
+  if (window.performance && typeof window.performance.now === "function") {
+    d += window.performance.now() //use high-precision timer if available
+  }
+  var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    var r = (d + Math.random() * 16) % 16 | 0
+    d = Math.floor(d / 16)
+    return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16)
+  })
+  return uuid
+}
+
 function addDevice(deviceName) {
   // Generate random UUID for device ID
-  const deviceId = crypto.randomUUID();
+  const deviceId = generateUUID();
   // Prepare device data
   const deviceData = {
     device_name: deviceName,
