@@ -1,13 +1,13 @@
 import sqlite3
+from datetime import datetime
 
 from slack_bolt import App
-from datetime import datetime
+
 
 # pylint: disable=consider-using-f-string
 
 
 def unlock_message_block_constructor(tool, user):
-
     return [
         {
             "type": "section",
@@ -52,10 +52,10 @@ class SlackNotifierPlugin:
         # Configure the Slack client with your token
         try:
             self.app_context = app_context
-            self.ee = self.app_context.app.ee  # Event emitter, used for event-based communication
-            self.config = self.app_context.app.config["PRISMO"]["NOTIFIER"]
-            self.db_uri = self.app_context.app.config["DATABASE_URI"]
             self.logger = self.app_context.app.logger
+            self.ee = self.app_context.app.ee  # Event emitter, used for event-based communication
+            self.config = self.app_context.app.config["PRISMO"]["PLUGINS"]["slack_notifier"]
+            self.db_uri = self.app_context.app.config["DATABASE_URI"]
             self.ee.add_listener('access-log-entry-added', self.access_log_entry_added)
             self.ee.add_listener('device-updated-keys', self.device_updated_keys)
             self.slack_app = App(token=self.config["SLACK_TOKEN"])
