@@ -82,6 +82,7 @@ def api_get_user_permissions():
     return jsonify(User.get_permissions())
 
 
+@web_api.route("/api/users", methods=["POST"])
 def api_add_user():
     user_data = request.get_json()
 
