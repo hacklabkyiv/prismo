@@ -23,7 +23,7 @@
 
 <div class="container-fluid overflow-hidden">
     <div class="row full-height overflow-auto">
-        <div class="col-md-3 col-sm-4 col-xs-12 bg-dark full-height">
+        <div class="col-md-3 col-sm-4 col-xs-12 bg-dark full-height position-sticky sticky-top">
             <div class="d-flex flex-sm-column flex-xs-row flex-row align-items-center align-items-sm-start px-3 pt-2 text-white flex-grow-0 sm-vh-100 full-height">
                 <p class="fs-5 d-flex align-items-center pb-sm-3 mb-md-0 me-md-auto text-white text-decoration-none">PRISMO Access System</p>
                 <ul class="nav nav-pills flex-sm-column flex-row flex-nowrap flex-shrink-1 flex-sm-grow-0 flex-grow-0 mb-sm-auto mb-0 justify-content-center align-items-center align-items-sm-start" id="menu">
@@ -71,7 +71,7 @@
             paging: false,
         })
     })
-    let username = sessionStorage.getItem('username')
+    let username = localStorage.getItem('username')
     document.getElementById('username').textContent = username
 </script>
 </body>
