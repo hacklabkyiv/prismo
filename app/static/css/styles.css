@@ -1,5 +1,5 @@
 .full-height {
-    height: auto;
+    max-height: 100vh;
 }
 
 @media (min-width: 576px) {

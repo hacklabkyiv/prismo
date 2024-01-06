@@ -51,15 +51,15 @@ function generateAccordionItems(devices) {
 
         <div id="flush-collapse-${device.id}" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
           <div class="accordion-body">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex justify-content-between align-items-center row">
 
-              <div class="me-3">
+              <div class="me-3 pb-3">
                 Device id: ${device.id}, Device type: ${device.type}
               </div>
 
               <div>
-                <button type="button" class="btn btn-primary me-3" data-bs-toggle="modal" data-bs-target="#flashDeviceModal" onclick="deviceIDForUpdate='${device.id}'">Flash Connected Device</button>
-                <button type="button" class="btn btn-danger" onclick="removeDevice('${device.id}')">Remove Device</button>
+                <button type="button" class="btn btn-primary me-3 col-12 col-sm-auto mb-1" data-bs-toggle="modal" data-bs-target="#flashDeviceModal" onclick="deviceIDForUpdate='${device.id}'">Flash Connected Device</button>
+                <button type="button" class="btn btn-danger col-12 col-sm-auto mb-1" onclick="removeDevice('${device.id}')">Remove Device</button>
               </div>
 
             </div>
