@@ -14,15 +14,11 @@
     "MAX_COOKIE_SIZE": 4093,
     "DATABASE_URI": "file:database.db",
     "PRISMO": {
-        "ACTIVE_PLUGINS": [
-            "slack_notifier"
-        ],
-        "PLUGINS": {
-            "slack_notifier": {
-                "SLACK_CHANNEL": "#prismo-debug",
-                "SLACK_TOKEN": "xoxb-this-is-not-areal-slack-token"
-            }
+        "NOTIFIER": {
+            "CURRENT_NOTIFIER": "SLACK",
+            "SLACK_CHANNEL": "#prismo-debug",
+            "SLACK_TOKEN": "xoxb-THIS-ISNOTAREAL-SLACKTOKEN"
         },
-        "READER_FIRMWARE_FLASHING_SCRIPT_PATH": "/home/artsin/Dev/prismo-reader/src/flasher.sh"
+        "READER_FIRMWARE_FLASHING_SCRIPT_PATH": "/path/to/reader/firmware/src/flasher.sh"
     }
 }

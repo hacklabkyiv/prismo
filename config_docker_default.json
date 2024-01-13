@@ -12,7 +12,7 @@
     "EXPLAIN_TEMPLATE_LOADING": false,
     "PREFERRED_URL_SCHEME": "http",
     "MAX_COOKIE_SIZE": 4093,
-    "DATABASE_URI": "file:database.db",
+    "DATABASE_URI": "file:./external/database.db",
     "PRISMO": {
         "ACTIVE_PLUGINS": [
             "slack_notifier"
@@ -23,6 +23,6 @@
                 "SLACK_TOKEN": "xoxb-this-is-not-areal-slack-token"
             }
         },
-        "READER_FIRMWARE_FLASHING_SCRIPT_PATH": "/home/artsin/Dev/prismo-reader/src/flasher.sh"
+        "READER_FIRMWARE_FLASHING_SCRIPT_PATH": "/reader-firmware/src/flasher.sh"
     }
 }
