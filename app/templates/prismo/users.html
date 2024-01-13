@@ -20,41 +20,60 @@
 
 <script>
   let usersTable
-  let latestKey
+
+  document.addEventListener('DOMContentLoaded', () => {
+    getLatestKey().then((latestKey) => {
+      if (latestKey && latestKey.operation_time) {
+        $('#used-key-at').text(latestKey.operation_time);
+      } else {
+        console.error("Latest key data or operation_time is missing.");
+        // Handle the error appropriately, e.g., display a placeholder message
+      }
+    }).catch((error) => {
+      console.error('Error fetching latest key:', error);
+      // Handle the error appropriately, e.g., display an error message
+    });
+  });
 
   async function getLatestKey() {
     try {
-      const response = await fetch('/api/devices/latest_key')
-      const data = await response.json()
-      return data
+      const response = await fetch('/api/devices/latest_key');
+      const data = await response.json();
+      console.log("Latest key data:", data); // Log for debugging
+      return data;
     } catch (error) {
-      console.error('Error:', error)
+      console.error('Error fetching latest key:', error);
+      return null; // Or throw an error
     }
   }
- 
+
   async function addUser(name) {
-    const key = latestKey.user_key
     try {
-      const response = await fetch('/api/users', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ name, key })
-      })
-      console.log(response)
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      const latestKey = await getLatestKey(); // Wait for API call
+
+      if (latestKey && latestKey.user_key) {
+        const key = latestKey.user_key;
+        const response = await fetch('/api/users', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ name, key })
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const newData = await fetchData();
+        usersTable.clear().rows.add(newData).draw();
+      } else {
+        console.error("Latest key data is missing or invalid.");
+        // Handle the error appropriately, e.g., display a message to the user
       }
-      // usersTable.row.add({
-      //   name,
-      //   key,
-      //   operation: '<button class="btn btn-sm btn-danger" onclick="deleteUser(\'' + key + '\')">Delete</button>'
-      // }).draw()
-      const newData = await fetchData()
-      usersTable.clear().rows.add( newData ).draw()
     } catch (error) {
-      console.error('Error:', error)
+      console.error('Error adding user:', error);
+      // Handle the error appropriately, e.g., display a message to the user
     }
   }
 
@@ -137,11 +156,9 @@
       columns: columns
     })
 
-    latestKey = await getLatestKey()
-    $('#used-key-at').text(latestKey.operation_time)
   }
 
-initializeDataTable()
+  initializeDataTable()
 </script>
 
 {% endblock %}
