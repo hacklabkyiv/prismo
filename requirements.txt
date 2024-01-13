@@ -12,3 +12,8 @@ gunicorn==20.0.4
 argon2-cffi
 pyee~=11.1.0
 slack-bolt
+# Used by reader flasher script
+intelhex
+pyserial
+adafruit-ampy
+esptool

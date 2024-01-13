@@ -1,9 +1,28 @@
 services:
   prismo-app:
-    image: hacklabkyiv/prismo-app:0.1.7
+    # Upload from dockerhub, uncomment this
+    #image: prismo-app
+    # Build locally, uncomment this
+    build: .
+    environment:
+      HOST_HOSTNAME: $HOST_HOSTNAME
+      HOST_WIFI_SSID: $HOST_WIFI_SSID
+      HOST_WIFI_PASSWORD: $HOST_WIFI_PASSWORD
     container_name: prismo-app
     restart: always
     ports:
-      - 80:5000
+      - 5000:5000
     volumes:
-      - ./data/:/app/external/
+      - "./data/:/app/external/"
+      - /run/udev:/run/udev:ro
+    privileged: true
+    devices:
+      # Here is some stuff to translate USB device to container.
+      - /dev/ttyUSB0:/dev/ttyUSB0:rw
+    device_cgroup_rules:
+      # https://stackoverflow.com/a/62758958/2514290
+      - "c 188:* rmw"
+      - "c 166:* rmw"
+      - "c 4:* rmw"
+    group_add:
+      - dialout
