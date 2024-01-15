@@ -7,6 +7,7 @@ import json
 import re
 import subprocess
 import uuid
+import os
 from pathlib import Path
 
 from flask import current_app as app
@@ -35,8 +36,15 @@ def update_firmware_full(socket, device_id):
     data = {"text": "", "progress": 0, "status": "is_running"}
     try:
         script_path = Path(app.config["PRISMO"]["READER_FIRMWARE_FLASHING_SCRIPT_PATH"])
+        # Check and set wifi credentials as environment variables. Since flasher script requires
+        # them as ENV variables,and looks like Raspberry Pi OS do not allows to get wifi password
+        # to console, this trick is used here.
+        run_environment = os.environ.copy()
+        run_environment["HOST_WIFI_SSID"] = app.config["PRISMO"]["WIFI_SSID"]
+        run_environment["HOST_WIFI_PASSWORD"] = app.config["PRISMO"]["WIFI_PASSWORD"]
         script_cwd = script_path.parent
-        process = subprocess.Popen([script_path, device_id], cwd=script_cwd, stdout=subprocess.PIPE)
+        process = subprocess.Popen([script_path, device_id], cwd=script_cwd,
+                                   stdout=subprocess.PIPE, env=run_environment)
     except FileNotFoundError:
         data["text"] = "Cannot find firmware update script"
         data["status"] = "Device flashing failed"
