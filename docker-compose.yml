@@ -15,7 +15,6 @@ services:
     volumes:
       - "./data/:/app/external/"
       - /run/udev:/run/udev:ro
-    privileged: true
     devices:
       # Here is some stuff to translate USB device to container.
       - /dev/ttyUSB0:/dev/ttyUSB0:rw
