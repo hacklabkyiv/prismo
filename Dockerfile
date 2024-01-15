@@ -1,4 +1,4 @@
-FROM python:3.10-slim
+FROM python:latest
 WORKDIR /app
 ENV PRISMO_CONFIG=/app/external/config_docker.json
 

@@ -14,6 +14,8 @@
     "MAX_COOKIE_SIZE": 4093,
     "DATABASE_URI": "file:./external/database.db",
     "PRISMO": {
+        "WIFI_SSID": "yourSSID",
+        "WIFI_PASSWORD": "yourWifiPassword",
         "ACTIVE_PLUGINS": [
             "slack_notifier"
         ],
