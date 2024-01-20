@@ -23,6 +23,8 @@
                 "SLACK_TOKEN": "xoxb-this-is-not-areal-slack-token"
             }
         },
-        "READER_FIRMWARE_FLASHING_SCRIPT_PATH": "/home/artsin/Dev/prismo-reader/src/flasher.sh"
+        "READER_FIRMWARE_FLASHING_SCRIPT_PATH": "/home/artsin/Dev/prismo-reader/src/flasher.sh",
+        "WIFI_SSID": "yourSSID",
+        "WIFI_PASSWORD": "yourWifiPassword"
     }
 }

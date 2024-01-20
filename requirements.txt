@@ -1,16 +1,16 @@
-Flask~=2.3.2
-pyyaml~=6.0
+Flask
+pyyaml
 requests
 slack_sdk
-Werkzeug==2.3.8
+Werkzeug
 flask-sock
 flask-login
 schedule
 pylint
 pycodestyle
-gunicorn==20.0.4
+gunicorn
 argon2-cffi
-pyee~=11.1.0
+pyee
 slack-bolt
 # Used by reader flasher script
 intelhex
