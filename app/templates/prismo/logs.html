@@ -59,13 +59,13 @@
                 title: 'Name',
                 render: (data, type, row) => {
                     if (data === null) return '–'
-                    return '<a href="/user/' + row.key + '">' + data + '</a>'
+                    return data
                 }
             },
             {
-                data: 'id',
+                data: 'device_name',
                 title: 'Device',
-                render: (data, type, row) => '<a href="/device/' + data + '">' + data + '</a>'
+                render: (data, type, row) => data
             },
             { data: 'operation_type', title: 'Operation Type' },
             {   data: 'operation_time',
