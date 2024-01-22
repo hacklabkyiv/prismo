@@ -61,7 +61,7 @@ class AccessLog:
         cursor = connection.cursor()
 
         query = """
-            SELECT u.name, u.key, d.name, d.id, operation_type, operation_time
+            SELECT u.name, u.key, d.name AS device_name, d.id, operation_type, operation_time
             FROM event_logs
             LEFT JOIN users u ON event_logs.user_key = u.key
             LEFT JOIN devices d ON d.id = event_logs.device_id
