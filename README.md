@@ -9,7 +9,7 @@ create a system that any maker space in the world can easily set up for
 its own use. The system is completely open-source, including the backend, 
 reader firmware, and PCB schematics.
 
-**⚠️ ☢️ 🚀 Attention!!! Disclaimer!!! ** PRISMO is in early alpha, NOT for production use! 
+⚠️ ☢️ 🚀 **Attention!!! Disclaimer!!!** PRISMO is in early alpha, NOT for production use! 
 Expect bugs, limitations, and security risks. Use only in controlled 
 environments. We take no responsibility for damages. Contribute 
 responsibly!
@@ -59,3 +59,20 @@ only during boot or after any key use.
 As we said, PRISMO is in early alpha stage, a lot of improvements needed, so
 contact us and join our team! We also can provide more detailed instructions about
 building HW part.
+
+List of contributors:
+
+- [Artem Synytsyn](https://github.com/leechwort)
+- [Anna Deeva](https://github.com/temhota)
+- [Volodymyr Stelmashchuk](https://github.com/VovaStelmashchuk)
+- [Oleksandr Ivanchuk](https://github.com/Sashkoiv)
+- [Volodymyr Babii](https://github.com/atari-zero)
+
+## Financial support
+
+System is developed mainly on a volunteering basis, but finantial support for writing documentation was 
+given by TOLOCAR program in Ukraine: a project funded by the German Government @bmz_bund 
+and implemented by the GIZ with support of At Stake gGmbH in close collaboration with Ukrainian and international partners.
+
+Also, please support our hackerspace at [Patreon](https://www.patreon.com/join/HackLabKyiv) to keep our PRISMO development active!
+
