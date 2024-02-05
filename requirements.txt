@@ -15,5 +15,5 @@ slack-bolt
 # Used by reader flasher script
 intelhex
 pyserial
-adafruit-ampy
+rshell
 esptool
