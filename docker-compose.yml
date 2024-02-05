@@ -6,12 +6,11 @@ services:
     build: .
     environment:
       HOST_HOSTNAME: $HOST_HOSTNAME
-      HOST_WIFI_SSID: $HOST_WIFI_SSID
-      HOST_WIFI_PASSWORD: $HOST_WIFI_PASSWORD
     container_name: prismo-app
     restart: always
     ports:
-      - 5000:5000
+      - 80:5000
+    privileged: true
     volumes:
       - "./data/:/app/external/"
       - /run/udev:/run/udev:ro
