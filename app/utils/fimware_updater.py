@@ -13,7 +13,7 @@ from pathlib import Path
 from flask import current_app as app
 
 
-def update_firmware_full(socket, device_id):
+def update_firmware_full(socket, device_id, device_type):
     """Run full firmware update, by running firmware updater script
 
     This function runs firmware updater script, which erases memory, flashes
@@ -26,6 +26,7 @@ def update_firmware_full(socket, device_id):
     socket -- communication websocket
     device_id -- device ID string, MUST be UUID string in format
                                         550e8400-e29b-41d4-a716-446655440000
+    device_type -- type of device, should be "tool" or "door"
 
     Returns:
     bool -- True if firmware update was successful, False otherwise
@@ -43,7 +44,7 @@ def update_firmware_full(socket, device_id):
         run_environment["HOST_WIFI_SSID"] = app.config["PRISMO"]["WIFI_SSID"]
         run_environment["HOST_WIFI_PASSWORD"] = app.config["PRISMO"]["WIFI_PASSWORD"]
         script_cwd = script_path.parent
-        process = subprocess.Popen([script_path, device_id], cwd=script_cwd,
+        process = subprocess.Popen([script_path, device_id, device_type], cwd=script_cwd,
                                    stdout=subprocess.PIPE, env=run_environment)
     except FileNotFoundError:
         data["text"] = "Cannot find firmware update script"
@@ -87,19 +88,23 @@ def update_firmware_full(socket, device_id):
 
 def firmware_updater_route(websocket):
     device_id = None
+    device_type = None
     while device_id is None:
         message = websocket.receive()
         if message:
             try:
+                json_data = json.loads(message)
                 # Check if we have received valid uuid string.
-                uuid.UUID(message)
-                device_id = message
-            except ValueError:
-                print("No uuid string was received:", message)
+                uuid.UUID(json_data["device_id"])
+                device_id = json_data["device_id"]
+                device_type = json_data["device_type"]
 
-    if device_id is not None:
-        update_result = update_firmware_full(websocket, device_id)
+            except ValueError:
+                app.logger.error("Wrong message received: %s", message)
+
+    if device_id is not None and device_type is not None:
+        update_result = update_firmware_full(websocket, device_id, device_type)
         app.logger.warning("Update result: %s", update_result)
     else:
-        app.logger.warning("No device id was received")
+        app.logger.warning("No device id or device type was received")
     app.logger.warning("Close websocket")

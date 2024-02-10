@@ -1,8 +1,8 @@
 // Global: Device ID, which is pending for update
 let deviceIDForUpdate = null;
-
+let deviceTypeForUpdate = null;
 function flashFirmware() {
-  console.log("Flashing device: ", deviceIDForUpdate);
+  console.log("Flashing device: ", deviceIDForUpdate, deviceTypeForUpdate);
   const socket = new WebSocket("ws://" + location.host + "/reader_flasher");
   const logContainer = document.getElementById("log-container");
 
@@ -12,7 +12,7 @@ function flashFirmware() {
     console.log(
       "WebSocket connection established, send device id for flashing",
     );
-    socket.send(deviceIDForUpdate);
+    socket.send(JSON.stringify({"device_id":deviceIDForUpdate, "device_type": deviceTypeForUpdate}));
   });
   function log(data) {
     const obj = JSON.parse(data);
@@ -58,7 +58,7 @@ function generateAccordionItems(devices) {
               </div>
 
               <div>
-                <button type="button" class="btn btn-primary me-3 col-12 col-sm-auto mb-1" data-bs-toggle="modal" data-bs-target="#flashDeviceModal" onclick="deviceIDForUpdate='${device.id}'">Flash Connected Device</button>
+                <button type="button" class="btn btn-primary me-3 col-12 col-sm-auto mb-1" data-bs-toggle="modal" data-bs-target="#flashDeviceModal" onclick="deviceIDForUpdate='${device.id}';deviceTypeForUpdate='${device.type}'">Flash Connected Device</button>
                 <button type="button" class="btn btn-danger col-12 col-sm-auto mb-1" onclick="removeDevice('${device.id}')">Remove Device</button>
               </div>
 
@@ -86,14 +86,15 @@ function generateUUID() {
   return uuid
 }
 
-function addDevice(deviceName) {
+function addDevice(deviceName, isDeviceTool) {
   // Generate random UUID for device ID
   const deviceId = generateUUID();
   // Prepare device data
   const deviceData = {
     device_name: deviceName,
     device_id: deviceId,
-    device_type: "tool",
+    // Looks like there is a bug in bootstrap toogle 5, can not just get value of toggle:(
+    device_type: (isDeviceTool ? "tool" : "door"),
   };
   // Make API call to add device
   fetch("/api/devices", {
