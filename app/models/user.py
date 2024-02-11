@@ -75,17 +75,38 @@ class User:
         # Fetch user data and permissions
         user_data = []
         # Filter by user_key if provided
+        # Here we also add "Latest Activity" column, for reporting latest any tool/door use by user
         if user_key:
             cursor.execute(
-                "SELECT users.name, users.key FROM users WHERE users.key = ?",
+                """
+                SELECT users.name, users.key,
+                       (SELECT operation_time
+                        FROM event_logs
+                        WHERE user_key = users.key
+                        ORDER BY operation_time DESC
+                        LIMIT 1) AS latest_activity
+                FROM users
+                WHERE users.key = ?
+                """,
                 (user_key,),
             )
         else:
-            cursor.execute("SELECT users.name, users.key FROM users")
+            cursor.execute(
+                """
+                SELECT users.name, users.key,
+                       (SELECT operation_time
+                        FROM event_logs
+                        WHERE user_key = users.key
+                        ORDER BY operation_time DESC
+                        LIMIT 1) AS latest_activity
+                FROM users
+                """
+            )
 
         for row in cursor.fetchall():
             user_name = row[0]
             user_key = row[1]
+            latest_activity = row[2]
 
             # Get device permissions for the current user
             device_permissions = []
@@ -118,6 +139,7 @@ class User:
                 "user_name": user_name,
                 "user_key": user_key,
                 "permissions": device_permissions,
+                "latest_activity": latest_activity,
             }
             user_data.append(user_record)
 
