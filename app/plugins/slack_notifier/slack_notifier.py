@@ -49,44 +49,45 @@ def unlock_message_block_constructor(tool, user):
 
 def door_message_block_constructor(door, user):
     return [
-		{
-			"type": "rich_text",
-			"elements": [
-				{
-					"type": "rich_text_section",
-					"elements": [
-                            {
-                                "type": "emoji",
-                                "name": "door",
-                                "unicode": "1f6aa"
-                            },
-                            {
-                                "type": "text",
-                                "text": "  "
-                            },
-                            {
-                                "type": "text",
-                                "text": "%s" % user,
-                                "style": {
-                                    "bold": True
-                                }
-                            },
-                            {
-                                "type": "text",
-                                "text": " entered through the "
-                            },
-                            {
-                                "type": "text",
-                                "text": "%s" % door,
-                                "style": {
-                                    "bold": True
-                                }
+        {
+            "type": "rich_text",
+            "elements": [
+                {
+                    "type": "rich_text_section",
+                    "elements": [
+                        {
+                            "type": "emoji",
+                            "name": "door",
+                            "unicode": "1f6aa"
+                        },
+                        {
+                            "type": "text",
+                            "text": "  "
+                        },
+                        {
+                            "type": "text",
+                            "text": "%s" % user,
+                            "style": {
+                                "bold": True
                             }
-                        ]
-                    }
-                ]
-            }
-        ]
+                        },
+                        {
+                            "type": "text",
+                            "text": " entered through the "
+                        },
+                        {
+                            "type": "text",
+                            "text": "%s" % door,
+                            "style": {
+                                "bold": True
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+
 
 class SlackNotifierPlugin:
     def __init__(self, app_context):
@@ -161,6 +162,7 @@ class SlackNotifierPlugin:
             return result[0]
 
         return None
+
     def access_log_entry_added(self, event):
         try:
             if event["operation"] == "unlock":
@@ -173,16 +175,18 @@ class SlackNotifierPlugin:
                     self.logger.info("Device name: %s", device_name)
                     text_message = "🔓 * %s Tool was unlocked* by %s" % (device_name, user_name)
                     blocks = unlock_message_block_constructor(device_name, user_name)
-                    self.slack_app.client.chat_postMessage(channel=self.config["SLACK_TOOL_CHANNEL"],
-                                                           text=text_message,
-                                                           blocks=blocks)
+                    self.slack_app.client.chat_postMessage(
+                        channel=self.config["SLACK_TOOL_CHANNEL"],
+                        text=text_message,
+                        blocks=blocks)
                 elif device_type == "door":
                     self.logger.info("Door opened: %s", device_name)
                     text_message = "🔓 * %s Door opened by * by %s" % (device_name, user_name)
                     blocks = door_message_block_constructor(device_name, user_name)
-                    self.slack_app.client.chat_postMessage(channel=self.config["SLACK_DOOR_CHANNEL"],
-                                                           text=text_message,
-                                                           blocks=blocks)
+                    self.slack_app.client.chat_postMessage(
+                        channel=self.config["SLACK_DOOR_CHANNEL"],
+                        text=text_message,
+                        blocks=blocks)
                 else:
                     self.logger.error("Unknown reader type! %s", device_type)
 
