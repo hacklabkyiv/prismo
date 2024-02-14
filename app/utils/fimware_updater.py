@@ -45,6 +45,7 @@ def update_firmware_full(socket, device_id, device_type):
         run_environment["HOST_WIFI_PASSWORD"] = app.config["PRISMO"]["WIFI_PASSWORD"]
         script_cwd = script_path.parent
         process = subprocess.Popen([script_path, device_id, device_type], cwd=script_cwd,
+
                                    stdout=subprocess.PIPE, env=run_environment)
     except FileNotFoundError:
         data["text"] = "Cannot find firmware update script"

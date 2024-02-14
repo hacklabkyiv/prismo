@@ -21,7 +21,7 @@
             "slack_notifier": {
                 "SLACK_TOOL_CHANNEL": "#prismo-debug",
                 "SLACK_DOOR_CHANNEL": "#prismo-door-channel",
-		"SLACK_TOKEN": "xoxb-this-is-not-areal-slack-token"
+                "SLACK_TOKEN": "xoxb-this-is-not-areal-slack-token"
             }
         },
         "READER_FIRMWARE_FLASHING_SCRIPT_PATH": "/home/artsin/Dev/prismo-reader/src/flasher.sh",
