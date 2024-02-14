@@ -19,7 +19,8 @@
         ],
         "PLUGINS": {
             "slack_notifier": {
-                "SLACK_CHANNEL": "#prismo-debug",
+                "SLACK_TOOL_CHANNEL": "#prismo-debug",
+                "SLACK_DOOR_CHANNEL": "#prismo-door-channel",
                 "SLACK_TOKEN": "xoxb-this-is-not-areal-slack-token"
             }
         },

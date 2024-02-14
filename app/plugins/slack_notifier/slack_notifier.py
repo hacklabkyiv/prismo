@@ -47,6 +47,48 @@ def unlock_message_block_constructor(tool, user):
         }]
 
 
+def door_message_block_constructor(door, user):
+    return [
+        {
+            "type": "rich_text",
+            "elements": [
+                {
+                    "type": "rich_text_section",
+                    "elements": [
+                        {
+                            "type": "emoji",
+                            "name": "door",
+                            "unicode": "1f6aa"
+                        },
+                        {
+                            "type": "text",
+                            "text": "  "
+                        },
+                        {
+                            "type": "text",
+                            "text": "%s" % user,
+                            "style": {
+                                "bold": True
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": " entered through the "
+                        },
+                        {
+                            "type": "text",
+                            "text": "%s" % door,
+                            "style": {
+                                "bold": True
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+
+
 class SlackNotifierPlugin:
     def __init__(self, app_context):
         # Configure the Slack client with your token
@@ -102,19 +144,52 @@ class SlackNotifierPlugin:
 
         return None
 
+    def get_device_type(self, device_id):
+        """
+        Get device name based on its ID
+        """
+        connection = sqlite3.connect(self.db_uri)
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT type from devices WHERE id = ?",
+                       (device_id,),
+                       )
+        connection.commit()
+        result = cursor.fetchone()
+
+        connection.close()
+        if result:
+            return result[0]
+
+        return None
+
     def access_log_entry_added(self, event):
         try:
             if event["operation"] == "unlock":
                 user_name = self.get_user_name(event["user_key"])
                 device_name = self.get_device_name(event["device_id"])
+                device_type = self.get_device_type(event["device_id"])
                 self.logger.info("Access log entry added")
                 self.logger.info("User name: %s", user_name)
-                self.logger.info("Device name: %s", device_name)
-                text_message = "🔓 * %s Tool was unlocked* by %s" % (device_name, user_name)
-                blocks = unlock_message_block_constructor(device_name, user_name)
-                self.slack_app.client.chat_postMessage(channel=self.config["SLACK_CHANNEL"],
-                                                       text=text_message,
-                                                       blocks=blocks)
+                if device_type == "tool":
+                    self.logger.info("Device name: %s", device_name)
+                    text_message = "🔓 * %s Tool was unlocked* by %s" % (device_name, user_name)
+                    blocks = unlock_message_block_constructor(device_name, user_name)
+                    self.slack_app.client.chat_postMessage(
+                        channel=self.config["SLACK_TOOL_CHANNEL"],
+                        text=text_message,
+                        blocks=blocks)
+                elif device_type == "door":
+                    self.logger.info("Door opened: %s", device_name)
+                    text_message = "🔓 * %s Door opened by * by %s" % (device_name, user_name)
+                    blocks = door_message_block_constructor(device_name, user_name)
+                    self.slack_app.client.chat_postMessage(
+                        channel=self.config["SLACK_DOOR_CHANNEL"],
+                        text=text_message,
+                        blocks=blocks)
+                else:
+                    self.logger.error("Unknown reader type! %s", device_type)
+
         except Exception as e:
             self.logger.error("Error in SlackNotifierPlugin.access_log_entry_added: %s", e)
             raise e

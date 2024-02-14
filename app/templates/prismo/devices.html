@@ -10,10 +10,12 @@
             <button
               class="btn btn-primary"
               type="submit"
-              onclick="addDevice(document.getElementById('device_name').value)">
+              onclick="addDevice(document.querySelector('#device-name').value, document.querySelector('#device-type').checked)">
               <i class="bi bi-database-add"></i> Add device
             </button>
-            <input type="text" class="form-control" id="device_name" placeholder="Device Name" />
+            <input type="text" class="form-control" id="device-name" placeholder="Device Name" />
+            <input type="checkbox" checked data-toggle="toggle" id="device-type"
+                   data-onlabel="<i class='bi bi-tools'></i> Tool" data-offlabel="<i c  lass='bi bi-door-closed'></i> Door">
           </div>
         </div>
       </div>
