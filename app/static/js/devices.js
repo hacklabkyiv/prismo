@@ -191,6 +191,7 @@ function makeEditable(event, deviceId, isEditIconClicked = false) {
     if (element.textContent === "" || element.textContent === originalContent) {
       // if the new name is empty, revert to the original name
       // TODO: add validation
+      element.textContent = originalContent;
       return;
     }
     await updateDevice(deviceId, element.textContent);
