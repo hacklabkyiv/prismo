@@ -45,7 +45,7 @@ function generateAccordionItems(devices) {
       <div class="accordion-item">
         <h2 class="accordion-header">
           <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse-${device.id}" aria-expanded="false" aria-controls="flush-collapse-${device.id}">
-            <p class="editable-field"><i class="bi bi-phone-vibrate-fill"></i> | <span class="deviceName" contenteditable="plaintext-only" spellcheck="false" id="device-${device.id}" onclick="makeEditable(event, '${device.id}')">${device.name}</span>
+            <p class="editable-field"><i class="bi bi-phone-vibrate-fill"></i> | <span class="deviceName" contenteditable="true" spellcheck="false" id="device-${device.id}" onclick="makeEditable(event, '${device.id}')">${device.name}</span>
             <i class="bi bi-pencil-fill edit" onclick="makeEditable(event, '${device.id}', true)"></i></p>
           </button>
         </h2>
