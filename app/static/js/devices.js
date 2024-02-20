@@ -121,7 +121,6 @@ function addDevice(deviceName, isDeviceTool) {
 }
 
 function updateDevice(deviceId, deviceName) {
-  console.log("updateDevice", deviceId, deviceName);
   // Prepare device data
   const deviceData = {
     name: deviceName,
@@ -138,7 +137,6 @@ function updateDevice(deviceId, deviceName) {
       // Check if response status code is 200 (OK)
       if (response.status === 200) {
         alert("Device updated successfully!");
-        refreshDevicesList();
       } else {
         alert("Error updating device. Please try again later.");
       }
