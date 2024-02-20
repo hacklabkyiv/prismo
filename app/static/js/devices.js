@@ -45,7 +45,8 @@ function generateAccordionItems(devices) {
       <div class="accordion-item">
         <h2 class="accordion-header">
           <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse-${device.id}" aria-expanded="false" aria-controls="flush-collapse-${device.id}">
-            <i class="bi bi-phone-vibrate-fill"></i> | ${device.name}
+            <p class="editable-field"><i class="bi bi-phone-vibrate-fill"></i> | <span class="deviceName" contenteditable="true" spellcheck="false" id="device-${device.id}" onclick="makeEditable(event, '${device.id}')">${device.name}</span>
+            <i class="bi bi-pencil-fill edit" onclick="makeEditable(event, '${device.id}', true)"></i></p>
           </button>
         </h2>
 
@@ -119,6 +120,33 @@ function addDevice(deviceName, isDeviceTool) {
     });
 }
 
+function updateDevice(deviceId, deviceName) {
+  // Prepare device data
+  const deviceData = {
+    name: deviceName,
+  };
+  // Make API call to update device
+  fetch(`/api/devices/${deviceId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(deviceData),
+  })
+    .then((response) => {
+      // Check if response status code is 200 (OK)
+      if (response.status === 200) {
+        alert("Device updated successfully!");
+      } else {
+        alert("Error updating device. Please try again later.");
+      }
+    })
+    .catch((error) => {
+      console.error("Error updating device:", error);
+      alert("Error updating device. Please try again later.");
+    });
+}
+
 function removeDevice(deviceId) {
   fetch(`/api/devices/${deviceId}`, {
     method: "DELETE",
@@ -142,4 +170,28 @@ function refreshDevicesList() {
     .then((response) => response.json())
     .then((data) => generateAccordionItems(data))
     .catch((error) => console.error("Error fetching data:", error));
+}
+
+function makeEditable(event, deviceId, isEditIconClicked = false) {
+  const element = document.getElementById(`device-${deviceId}`);
+  if (isEditIconClicked) {
+    element === document.activeElement ? element.blur() : element.focus();
+  }
+  let originalContent = element.textContent;
+
+  element.addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+      this.blur();
+    }
+  });
+
+  element.onblur = async function () {
+    if (element.textContent === "" || element.textContent === originalContent) {
+      // if the new name is empty, revert to the original name
+      // TODO: add validation
+      element.textContent = originalContent;
+      return;
+    }
+    await updateDevice(deviceId, element.textContent);
+  };
 }
