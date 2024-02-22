@@ -8,3 +8,19 @@
         height: 100%;
     }
 }
+
+.editable-field span {
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.editable-field i.edit {
+    opacity: 0;
+}
+
+.editable-field:hover i.edit, .editable-field:focus i.edit  {
+    opacity: 1;
+    transition: 0.3s;
+}
