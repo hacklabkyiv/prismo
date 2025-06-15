@@ -85,7 +85,7 @@ def api_get_user_permissions():
 @web_api.route("/api/users", methods=["POST"])
 def api_add_user():
     user_data = request.get_json()
-    user = User(user_data["name"], user_data["key"])
+    user = User(user_data["name"], user_data["key"], user_data["email"])
 
     number_of_new_user_added = user.save()
 
