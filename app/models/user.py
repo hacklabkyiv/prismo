@@ -152,7 +152,7 @@ class User:
         # Close the database connection
         conn.close()
 
-        # print(f"User data fetched: {user_data}")
+        print(f"User data fetched: {user_data}")
         return user_data
 
     def has_permission_for_device(self, device_id):
