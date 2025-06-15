@@ -108,7 +108,6 @@ class User:
             user_key = row[1]
             user_email = row[2] if row[2] else None  # Handle email being None
             latest_activity = row[3]
-            
 
             # Get device permissions for the current user
             device_permissions = []
@@ -149,7 +148,7 @@ class User:
         # Close the database connection
         conn.close()
         
-        print(f"User data fetched: {user_data}")  # Debugging output
+        print(f"User data fetched: {user_data}")
         return user_data
 
     def has_permission_for_device(self, device_id):
