@@ -147,7 +147,7 @@ class User:
 
         # Close the database connection
         conn.close()
-        
+
         print(f"User data fetched: {user_data}")
         return user_data
 
