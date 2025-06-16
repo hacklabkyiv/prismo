@@ -6,8 +6,9 @@
             <div class="card-body">
                 <h5 class="card-title">Add last used RFID card as new user: <span id="used-key-at"></span></h5>
                 <div class="input-group mb-3">
-                    <button class="btn btn-primary" type="submit" onclick="addUser(document.getElementById('user_name').value)" ><i class="bi bi-person-add"></i> Add User</button>  
+                    <button class="btn btn-primary" type="submit" onclick="addUser(document.getElementById('user_name').value, document.getElementById('user_email').value)" ><i class="bi bi-person-add"></i> Add User</button>  
                     <input type="text" class="form-control" id="user_name" placeholder="User Name">
+                    <input type="email" class="form-control ms-2" id="user_email" placeholder="Email">
                 </div>
             </div>
         </div>
@@ -46,8 +47,9 @@
       return null; // Or throw an error
     }
   }
-
-  async function addUser(name) {
+  // Example curl request to add a new user:
+  // curl -X POST -H "Content-Type: application/json" -d '{"name":"John Doe","email":"john@example.com","key":"RFID_KEY"}' http://localhost:5000/api/users
+  async function addUser(name, email) {
     try {
       const latestKey = await getLatestKey(); // Wait for API call
 
@@ -58,7 +60,7 @@
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ name, key })
+          body: JSON.stringify({ name, email, key })
         });
 
         if (!response.ok) {
@@ -107,6 +109,7 @@
             return acc
           }, {}),
           latestActivity: user.latest_activity,
+          email: user.user_email,
           operation: '<button class="btn btn-sm btn-danger" onclick="deleteUser(\'' + user.user_key + '\')">Delete</button>'
         }
       })
@@ -135,14 +138,26 @@
   }
 
   const getColumns = (data) => {
-    return Object.keys(data[0]).map(key => ({
-      data: (row) => {
-        const value = row[key]
-        return typeof value === 'string' ? value : `<input type="checkbox" ${value?.allowed && "checked"} onchange="updatePermissions('${row.key}', '${value?.device_id}', ${value?.allowed})">`
-      },
-      visible: key !== 'key',
-      title: key.charAt(0).toUpperCase() + key.slice(1)
-    }))
+    return Object.keys(data[0]).map(key => {
+      // Force the email column to be visible and render as plain text
+      if (key === 'email') {
+        return {
+          data: row => row.email || '',
+          visible: true,
+          title: 'Email'
+        }
+      }
+      return {
+        data: (row) => {
+          const value = row[key]
+          return typeof value === 'string'
+            ? value
+            : `<input type="checkbox" ${value?.allowed ? "checked" : ""} onchange="updatePermissions('${row.key}', '${value?.device_id}', ${value?.allowed})">`
+        },
+        visible: key !== 'key',
+        title: key.charAt(0).toUpperCase() + key.slice(1)
+      }
+    })
   }
 
   async function initializeDataTable() {

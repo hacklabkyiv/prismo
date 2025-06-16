@@ -3,10 +3,10 @@ from flask import current_app as app
 
 
 class User:
-    def __init__(self, name, key, slack_id=None):
+    def __init__(self, name, key, email=None):
         self.name = name
         self.key = key
-        self.slack_id = slack_id
+        self.email = email
 
     @classmethod
     def get_by_key(cls, key):
@@ -34,14 +34,14 @@ class User:
         if existing_user:
             # Update existing user data
             cursor.execute(
-                "UPDATE users SET name = ?, slack_id = ? WHERE key = ?",
-                (self.name, self.slack_id, self.key),
+                "UPDATE users SET name = ?, key = ? WHERE email = ?",
+                (self.name, self.key, self.email if self.email else None),
             )
         else:
             # Create new user
             cursor.execute(
-                "INSERT INTO users (name, key, slack_id) VALUES (?, ?, ?)",
-                (self.name, self.key, self.slack_id),
+                "INSERT INTO users (name, key, email) VALUES (?, ?, ?)",
+                (self.name, self.key, self.email if self.email else None),
             )
             number_of_new_user = 1
             conn.commit()
@@ -79,7 +79,7 @@ class User:
         if user_key:
             cursor.execute(
                 """
-                SELECT users.name, users.key,
+                SELECT users.name, users.key, users.email,
                        (SELECT operation_time
                         FROM event_logs
                         WHERE user_key = users.key
@@ -93,7 +93,7 @@ class User:
         else:
             cursor.execute(
                 """
-                SELECT users.name, users.key,
+                SELECT users.name, users.key, users.email,
                        (SELECT operation_time
                         FROM event_logs
                         WHERE user_key = users.key
@@ -106,7 +106,8 @@ class User:
         for row in cursor.fetchall():
             user_name = row[0]
             user_key = row[1]
-            latest_activity = row[2]
+            user_email = row[2] if row[2] else None  # Handle email being None
+            latest_activity = row[3]
 
             # Get device permissions for the current user
             device_permissions = []
@@ -138,6 +139,7 @@ class User:
             user_record = {
                 "user_name": user_name,
                 "user_key": user_key,
+                "user_email": user_email,
                 "permissions": device_permissions,
                 "latest_activity": latest_activity,
             }
@@ -146,6 +148,7 @@ class User:
         # Close the database connection
         conn.close()
 
+        print(f"User data fetched: {user_data}")
         return user_data
 
     def has_permission_for_device(self, device_id):
