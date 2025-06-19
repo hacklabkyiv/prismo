@@ -28,11 +28,11 @@
         $('#used-key-at').text(latestKey.operation_time);
       } else {
         console.error("Latest key data or operation_time is missing.");
-        // Handle the error appropriately, e.g., display a placeholder message
+        $('#used-key-at').text('No recent key detected');
       }
     }).catch((error) => {
       console.error('Error fetching latest key:', error);
-      // Handle the error appropriately, e.g., display an error message
+      $('#used-key-at').text('Error fetching key');
     });
   });
 
@@ -50,6 +50,10 @@
   // Example curl request to add a new user:
   // curl -X POST -H "Content-Type: application/json" -d '{"name":"John Doe","email":"john@example.com","key":"RFID_KEY"}' http://localhost:5000/api/users
   async function addUser(name, email) {
+    if (!name || !email) {
+      alert('Both name and email are required.');
+      throw new Error('Both name and email are required.');
+    }
     try {
       const latestKey = await getLatestKey(); // Wait for API call
 
@@ -71,6 +75,7 @@
         usersTable.clear().rows.add(newData).draw();
       } else {
         console.error("Latest key data is missing or invalid.");
+        alert('Latest key data is missing or invalid.');
         // Handle the error appropriately, e.g., display a message to the user
       }
     } catch (error) {

@@ -6,19 +6,17 @@ from flask import current_app as app
 class Device:
     """Represents a device in the database."""
 
-    def __init__(self, device_id, name, device_type, slack_channel_id=None):
+    def __init__(self, device_id, name, device_type):
         """Initializes a new device instance.
 
         Args:
             device_id (str): The unique identifier for the device.
             name (str): The name of the device.
             device_type (str): The type of device (e.g., "tool").
-            slack_channel_id (str): The Slack channel ID for notifications about the device.
         """
         self.device_id = device_id
         self.name = name
         self.device_type = device_type
-        self.slack_channel_id = slack_channel_id
 
     @classmethod
     def get_all_devices(cls):
@@ -92,8 +90,8 @@ class Device:
         connection = sqlite3.connect(app.config["DATABASE_URI"])
         cursor = connection.cursor()
 
-        cursor.execute("INSERT INTO devices (id, name, type, slack_channel_id) VALUES (?, ?, ?, ?)",
-                       (self.device_id, self.name, self.device_type, self.slack_channel_id))
+        cursor.execute("INSERT INTO devices (id, name, type) VALUES (?, ?, ?)",
+                       (self.device_id, self.name, self.device_type))
         connection.commit()
         connection.close()
 
