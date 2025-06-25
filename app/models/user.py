@@ -3,10 +3,11 @@ from flask import current_app as app
 
 
 class User:
-    def __init__(self, name, key, email=None):
+    def __init__(self, name, email, phone, key):
         self.name = name
-        self.key = key
         self.email = email
+        self.phone = phone
+        self.key = key
 
     @classmethod
     def get_by_key(cls, key):
@@ -33,15 +34,16 @@ class User:
         number_of_new_user = 0
         if existing_user:
             # Update existing user data
+            # Updating mechanism needs to be improved
             cursor.execute(
                 "UPDATE users SET name = ?, key = ? WHERE email = ?",
-                (self.name, self.key, self.email if self.email else None),
+                (self.name, self.key, self.email),
             )
         else:
             # Create new user
             cursor.execute(
-                "INSERT INTO users (name, key, email) VALUES (?, ?, ?)",
-                (self.name, self.key, self.email if self.email else None),
+                "INSERT INTO users (name, email, phone, key) VALUES (?, ?, ?, ?)",
+                (self.name, self.email, self.phone, self.key),
             )
             number_of_new_user = 1
             conn.commit()
@@ -79,7 +81,7 @@ class User:
         if user_key:
             cursor.execute(
                 """
-                SELECT users.name, users.key, users.email,
+                SELECT users.name, users.email, users.phone, users.key,
                        (SELECT operation_time
                         FROM event_logs
                         WHERE user_key = users.key
@@ -93,7 +95,7 @@ class User:
         else:
             cursor.execute(
                 """
-                SELECT users.name, users.key, users.email,
+                SELECT users.name, users.email, users.phone, users.key,
                        (SELECT operation_time
                         FROM event_logs
                         WHERE user_key = users.key
@@ -105,9 +107,10 @@ class User:
 
         for row in cursor.fetchall():
             user_name = row[0]
-            user_key = row[1]
-            user_email = row[2] if row[2] else None  # Handle email being None
-            latest_activity = row[3]
+            user_email = row[1] if row[1] else None  # Handle email being None
+            user_phone = row[2] if row[2] else None  # Handle phone being None
+            user_key = row[3]
+            latest_activity = row[4]
 
             # Get device permissions for the current user
             device_permissions = []
@@ -138,8 +141,9 @@ class User:
             # Combine user information and permissions into a single record
             user_record = {
                 "user_name": user_name,
-                "user_key": user_key,
                 "user_email": user_email,
+                "user_phone": user_phone,
+                "user_key": user_key,
                 "permissions": device_permissions,
                 "latest_activity": latest_activity,
             }
