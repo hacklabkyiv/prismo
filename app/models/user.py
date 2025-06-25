@@ -16,7 +16,7 @@ class User:
         cursor.execute("SELECT * FROM users WHERE key = ?", (key,))
         result = cursor.fetchone()
         if result:
-            return User(result[0], result[1], result[2])
+            return User(result[0], result[1], result[2], result[3])
 
         return None
 

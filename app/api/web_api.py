@@ -101,7 +101,7 @@ def api_add_user():
 
 @web_api.route("/api/users/<user_key>", methods=["DELETE"])
 def api_delete_user(user_key):
-    user = User(key=user_key, name=None)
+    user = User(key=user_key, name=None, email=None, phone=None)
     user.delete()
 
     return jsonify({"message": "User deleted successfully"})
@@ -109,7 +109,7 @@ def api_delete_user(user_key):
 
 @web_api.route("/api/users/<user_key>/devices/<device_id>", methods=["POST"])
 def api_add_user_permission(user_key, device_id):
-    user = User(key=user_key, name=None)
+    user = User(key=user_key, name=None, email=None, phone=None)
     user.add_permission(device_id)
 
     return jsonify({"message": "User permission added successfully"})
@@ -117,7 +117,7 @@ def api_add_user_permission(user_key, device_id):
 
 @web_api.route("/api/users/<user_key>/devices/<device_id>", methods=["DELETE"])
 def api_remove_user_permission(user_key, device_id):
-    user = User(key=user_key, name=None)
+    user = User(key=user_key, name=None, email=None, phone=None)
     user.remove_permission(device_id)
 
     return jsonify({"message": "User permission removed successfully"})
