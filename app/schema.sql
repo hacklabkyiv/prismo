@@ -7,8 +7,10 @@ CREATE TABLE IF NOT EXISTS admins
 CREATE TABLE IF NOT EXISTS users
 (
     name     TEXT NOT NULL,
-    key      TEXT NOT NULL,
-    slack_id TEXT DEFAULT NULL
+    email    TEXT NOT NULL,
+    phone    TEXT DEFAULT NULL,
+    key      TEXT NOT NULL
+    
 );
 CREATE TABLE IF NOT EXISTS permissions
 (

@@ -3,10 +3,11 @@ from flask import current_app as app
 
 
 class User:
-    def __init__(self, name, key, slack_id=None):
+    def __init__(self, name, email, phone, key):
         self.name = name
+        self.email = email
+        self.phone = phone
         self.key = key
-        self.slack_id = slack_id
 
     @classmethod
     def get_by_key(cls, key):
@@ -15,7 +16,7 @@ class User:
         cursor.execute("SELECT * FROM users WHERE key = ?", (key,))
         result = cursor.fetchone()
         if result:
-            return User(result[0], result[1], result[2])
+            return User(result[0], result[1], result[2], result[3])
 
         return None
 
@@ -33,15 +34,16 @@ class User:
         number_of_new_user = 0
         if existing_user:
             # Update existing user data
+            # Updating mechanism needs to be improved
             cursor.execute(
-                "UPDATE users SET name = ?, slack_id = ? WHERE key = ?",
-                (self.name, self.slack_id, self.key),
+                "UPDATE users SET name = ?, key = ? WHERE email = ?",
+                (self.name, self.key, self.email),
             )
         else:
             # Create new user
             cursor.execute(
-                "INSERT INTO users (name, key, slack_id) VALUES (?, ?, ?)",
-                (self.name, self.key, self.slack_id),
+                "INSERT INTO users (name, email, phone, key) VALUES (?, ?, ?, ?)",
+                (self.name, self.email, self.phone, self.key),
             )
             number_of_new_user = 1
             conn.commit()
@@ -79,7 +81,7 @@ class User:
         if user_key:
             cursor.execute(
                 """
-                SELECT users.name, users.key,
+                SELECT users.name, users.email, users.phone, users.key,
                        (SELECT operation_time
                         FROM event_logs
                         WHERE user_key = users.key
@@ -93,7 +95,7 @@ class User:
         else:
             cursor.execute(
                 """
-                SELECT users.name, users.key,
+                SELECT users.name, users.email, users.phone, users.key,
                        (SELECT operation_time
                         FROM event_logs
                         WHERE user_key = users.key
@@ -105,8 +107,10 @@ class User:
 
         for row in cursor.fetchall():
             user_name = row[0]
-            user_key = row[1]
-            latest_activity = row[2]
+            user_email = row[1] if row[1] else None  # Handle email being None
+            user_phone = row[2] if row[2] else None  # Handle phone being None
+            user_key = row[3]
+            latest_activity = row[4]
 
             # Get device permissions for the current user
             device_permissions = []
@@ -137,6 +141,8 @@ class User:
             # Combine user information and permissions into a single record
             user_record = {
                 "user_name": user_name,
+                "user_email": user_email,
+                "user_phone": user_phone,
                 "user_key": user_key,
                 "permissions": device_permissions,
                 "latest_activity": latest_activity,
@@ -146,6 +152,7 @@ class User:
         # Close the database connection
         conn.close()
 
+        print(f"User data fetched: {user_data}")
         return user_data
 
     def has_permission_for_device(self, device_id):
