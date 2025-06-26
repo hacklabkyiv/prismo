@@ -3,6 +3,7 @@ from discord import SyncWebhook
 
 # pylint: disable=consider-using-f-string
 
+
 class DiscordNotifierPlugin:
     def __init__(self, app_context):
         try:
