@@ -73,7 +73,7 @@ def door_message_block_constructor(door, user):
                         },
                         {
                             "type": "text",
-                            "text": " entered through the "
+                            "text": " opened "
                         },
                         {
                             "type": "text",
