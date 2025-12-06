@@ -41,7 +41,7 @@ sudo reboot
 ```commandline
 git clone https://github.com/hacklabkyiv/prismo.git
 cd prismo
-./docker-run.sh
+./docker_run.sh
 ```
 
 

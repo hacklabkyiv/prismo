@@ -3,6 +3,9 @@ WORKDIR /app
 ENV PRISMO_CONFIG=/app/external/config_docker.json
 
 RUN apt-get update && apt-get install -y jo git
+RUN apt-get install -y tzdata
+
+ENV TZ=Europe/Kyiv
 
 COPY requirements.txt /app
 RUN pip3 install -r requirements.txt
